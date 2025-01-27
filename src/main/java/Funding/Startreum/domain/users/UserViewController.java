@@ -13,4 +13,11 @@ public class UserViewController {
         // 필요 시 모델에 데이터 추가 가능
         return "users/signup"; // templates/users/signup.html
     }
+
+    // 로그인 페이지 호출
+    @GetMapping("api/users/login")
+    public String showloginForm(Model model) {
+        // 필요 시 모델에 데이터 추가 가능
+        return "users/login";
+    }
 }
