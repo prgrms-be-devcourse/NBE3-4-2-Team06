@@ -1,0 +1,39 @@
+.progress-bar {
+    background-color: #007bff;
+}
+
+@media (max-width: 768px) {
+    /* 헤더 정렬 변경 */
+    header .container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    header nav {
+        margin-top: 10px;
+    }
+
+    header .btn {
+        margin: 5px 0;
+    }
+
+    /* 카드 간격 조정 */
+    .card {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    /* 글씨 크기 조정 */
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    h2 {
+        font-size: 1.4rem;
+    }
+
+    .card-title {
+        font-size: 1rem;
+    }
+}
