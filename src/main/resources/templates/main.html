@@ -9,7 +9,8 @@
 <body>
 
 <!-- Header -->
-<div th:replace="fragments/header :: header"></div>
+<div th:replace="~{fragments/header :: header}"></div>
+<script src="/js/header.js"></script>
 
 
 <!-- Hero Section -->
@@ -92,7 +93,7 @@
 </section>
 
 <!-- Footer -->
-<div th:replace="fragments/footer :: footer"></div>
+<div th:replace="~{fragments/footer :: footer}"></div>
 
 </body>
 </html>
