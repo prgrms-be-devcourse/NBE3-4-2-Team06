@@ -1,24 +1,19 @@
-<div th:fragment="header" xmlns:th="http://www.w3.org/1999/xhtml">
+<div th:fragment="header">
     <header class="bg-white shadow sticky-top">
         <div class="container d-flex justify-content-between align-items-center py-3">
             <div class="d-flex align-items-center">
-                <!-- 로고에 홈 링크 추가 -->
+                <!-- 로고 -->
                 <a href="/" class="text-decoration-none">
                     <img src="https://velog.velcdn.com/images/xianse10/post/e3008f8c-857a-46e6-8249-6462c5212bd9/image.png"
                          alt="Startreum Logo" style="height: 50px;">
                 </a>
             </div>
-            <nav class="d-flex gap-3">
-                <a href="#open" class="text-dark text-decoration-none">오픈 예정</a>
-                <a href="#funding" class="text-dark text-decoration-none">펀딩</a>
-                <a href="#success" class="text-dark text-decoration-none">성공 사례</a>
-                <a href="#profile" class="text-dark text-decoration-none">내 펀딩</a>
-            </nav>
-            <!-- 로그인 및 회원가입 버튼 -->
-            <div class="d-flex gap-2">
+            <!-- 로그인 상태에 따라 버튼 변경 -->
+            <div class="d-flex gap-3" id="auth-buttons">
                 <a href="/api/users/login" class="btn btn-outline-primary">로그인</a>
                 <a href="/api/users/signup" class="btn btn-primary">회원가입</a>
             </div>
         </div>
     </header>
 </div>
+
