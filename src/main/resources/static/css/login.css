@@ -8,7 +8,7 @@ body {
 }
 
 .form-container {
-    width: 400px; /* 고정 너비 */
+    width: 600px; /* 고정 너비 */
     padding: 30px;
     background: white;
     border-radius: 10px;
