@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) //  CSRF 비활성화 (REST API 방식)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // 정적 리소스 허용
-                        .requestMatchers("/api/users/signup", "/api/users/login").permitAll() // 로그인 & 회원가입 허용
+                        .requestMatchers("/api/users/signup", "/api/users/registrar", "/api/users/login", "/api/users/check-name", "/api/users/check-email").permitAll() // 로그인 & 회원가입 허용
                         .anyRequest().authenticated() // 나머지 요청은 인증 필요
                 )
                 .formLogin(AbstractHttpConfigurer::disable) //  기본 로그인 폼 비활성화 (Spring이 가로채지 않도록)
