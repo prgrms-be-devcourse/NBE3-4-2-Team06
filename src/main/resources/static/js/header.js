@@ -6,7 +6,6 @@ window.onload = function () {
         return;
     }
 
-
     const accessToken = localStorage.getItem("accessToken");
 
     console.log("🔹 토큰 존재 여부:", accessToken ? "있음" : "없음");
@@ -17,15 +16,6 @@ window.onload = function () {
             const userName = tokenPayload.sub || "알 수 없음";  // subject(name)
             const userRole = tokenPayload.role || "역할 없음"; // role 추출
 
-<<<<<<< HEAD
-            console.log("✅ 로그인 된 사용자:", userName, "역할:", userRole);
-
-            // ✅ 역할을 한글로 변환
-            const roleTranslation = {
-                "BENEFICIARY": "수혜자",
-                "SPONSOR": "후원자",
-                "ADMIN": "관리자"
-=======
             console.log(" 로그인 된 사용자:", userName, "역할:", userRole);
 
             //  역할을 한글로 변환
@@ -33,21 +23,10 @@ window.onload = function () {
                 "ROLE_BENEFICIARY": "수혜자",
                 "ROLE_SPONSOR": "후원자",
                 "ROLE_ADMIN": "관리자"
->>>>>>> feature/be/users-profile
             };
 
             const translatedRole = roleTranslation[userRole] || "알 수 없는 역할";
 
-<<<<<<< HEAD
-            // ✅ 로그인 상태일 때: 사용자 이름 & 로그아웃 버튼 표시
-            authButtons.innerHTML = `
-                <span class="fw-bold text-primary">${userName} (${translatedRole})님</span>
-                <a href="/mypage" class="btn btn-outline-primary">내 정보</a>
-                <button onclick="logout()" class="btn btn-danger">로그아웃</button>
-            `;
-        } catch (error) {
-            console.error("❌ JWT 디코딩 오류:", error);
-=======
             //  로그인 상태일 때: 사용자 이름 & 로그아웃 버튼 표시
        authButtons.innerHTML = `
            <span class="fw-bold text-primary">${userName} (${translatedRole})님</span>
@@ -59,17 +38,10 @@ window.onload = function () {
        document.getElementById("logout-button").addEventListener("click", logout);
         } catch (error) {
             console.error(" JWT 디코딩 오류:", error);
->>>>>>> feature/be/users-profile
         }
     }
 };
 
-<<<<<<< HEAD
-function logout() {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    window.location.href = "/";
-=======
 async function logout() {
     console.log("🔹 로그아웃 요청 중...");
 
@@ -96,5 +68,4 @@ async function logout() {
         console.error("❌ 로그아웃 오류:", error);
         alert("로그아웃 중 문제가 발생했습니다.");
     }
->>>>>>> feature/be/users-profile
 }
