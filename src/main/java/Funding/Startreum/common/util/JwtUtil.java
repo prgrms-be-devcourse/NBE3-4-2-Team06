@@ -17,6 +17,7 @@ public class JwtUtil {
 
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
 
+
     // Access Token 생성 (name을 subject로 설정, email과 role 포함)
     public String generateAccessToken(String name, String email, String role) {
         return Jwts.builder()

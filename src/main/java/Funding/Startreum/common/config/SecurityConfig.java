@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,16 +29,26 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 추가
                 .csrf(AbstractHttpConfigurer::disable) //  CSRF 비활성화 (REST API 방식)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // 정적 리소스 허용
-                        .requestMatchers("/api/users/signup", "/api/users/login").permitAll() // 로그인 & 회원가입 허용
-                        .anyRequest().authenticated() // 나머지 요청은 인증 필요
-                )
-                .formLogin(AbstractHttpConfigurer::disable) //  기본 로그인 폼 비활성화 (Spring이 가로채지 않도록)
-                .logout(logout -> logout
-                        .logoutUrl("/logout") // 로그아웃 URL
-                        .logoutSuccessUrl("/") // 로그아웃 후 리디렉션
-                        .permitAll()
+
+//                                .requestMatchers("/", "/home", "/index.html").permitAll()
+//                                .requestMatchers("/api/users/logout").permitAll()  // ✅ 로그아웃 요청은 인증 없이 가능
+//                                // ✅ 정적 리소스 허용 (CSS, JS, Images 등)
+//                                .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+//
+//                                // ✅ 회원가입, 로그인, 중복 확인 API 허용
+//                                .requestMatchers("/api/users/signup", "/api/users/registrar","/api/users/login", "/api/users/check-name", "/api/users/check-email").permitAll()
+//
+//                                // ✅ 프로필 페이지 (View)는 누구나 접근 가능
+//                                .requestMatchers("/profile/{name}").permitAll()
+//
+//                                // ✅ 프로필 API는 인증된 사용자만 접근 가능
+//                                .requestMatchers("/api/users/profile/{name}").hasAnyAuthority("ADMIN", "BENEFICIARY", "SPONSOR")
+//
+//                                // ✅ 그 외 모든 요청은 인증 필요
+//                                .anyRequest().authenticated()
+                          .anyRequest().permitAll() // ✅ 모든 요청 허용 (테스트용)
                 );
 
         return http.build();

@@ -1,0 +1,18 @@
+package Funding.Startreum.domain.funding;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+
+public interface FundingRepository extends JpaRepository<Funding, Long> {
+    @Query("""
+        SELECT f FROM Funding f
+        JOIN FETCH f.project p
+        WHERE f.sponsor.email = :email
+        ORDER BY f.fundedAt DESC
+        """)
+    Page<Funding> findBySponsorEmail(@Param("email") String email, Pageable pageable);
+}
