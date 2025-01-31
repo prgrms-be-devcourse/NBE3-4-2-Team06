@@ -1,4 +1,4 @@
-package Funding.Startreum.domain.project;
+package Funding.Startreum.domain.project.entity;
 
 import Funding.Startreum.domain.comment.Comment;
 import Funding.Startreum.domain.reward.Reward;

@@ -3,7 +3,7 @@ package Funding.Startreum.domain.users;
 import Funding.Startreum.domain.admin.Admin;
 import Funding.Startreum.domain.comment.Comment;
 import Funding.Startreum.domain.inquiry.Inquiry;
-import Funding.Startreum.domain.project.Project;
+import Funding.Startreum.domain.project.entity.Project;
 import Funding.Startreum.domain.funding.Funding;
 import Funding.Startreum.domain.virtualaccount.VirtualAccount;
 import jakarta.persistence.*;
