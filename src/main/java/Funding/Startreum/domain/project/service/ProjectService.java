@@ -24,9 +24,10 @@ public class ProjectService {
     private final UserRepository userRepository;
 
     @Transactional
-    public ProjectCreateResponseDto createProject(Integer userId, ProjectCreateRequestDto projectCreateRequestDto) {
+    public ProjectCreateResponseDto createProject(String userId, ProjectCreateRequestDto projectCreateRequestDto) {
+
         //사용자 검증
-        User user = userRepository.findById(userId).orElseThrow(() ->
+        User user = userRepository.findByEmail(userId).orElseThrow(() ->
         new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용자를 찾을 수 없습니다"));    //사용자를 찾을 수 없을 시 401 에러
 
         //프로젝트 생성
@@ -46,7 +47,6 @@ public class ProjectService {
 
         projectRepository.save(project);
 
-        ProjectCreateResponseDto projectCreateResponseDto = new ProjectCreateResponseDto(project.getProjectId(), project.getTitle(), project.getCreatedAt());
-        return projectCreateResponseDto;
+        return new ProjectCreateResponseDto(project.getProjectId(), project.getTitle(), project.getCreatedAt());
     }
 }

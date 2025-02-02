@@ -31,7 +31,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/css/**", "/js/**", "/images/**").permitAll() // 정적 리소스 허용
                         .requestMatchers("/api/users/signup", "/api/users/login").permitAll() // 로그인 & 회원가입 허용
-                        .anyRequest().authenticated() // 나머지 요청은 인증 필요
+                        //.anyRequest().authenticated() // 나머지 요청은 인증 필요
+                        .anyRequest().permitAll() // ✅ 모든 요청 허용 (테스트용)
                 )
                 .formLogin(AbstractHttpConfigurer::disable) //  기본 로그인 폼 비활성화 (Spring이 가로채지 않도록)
                 .logout(logout -> logout
