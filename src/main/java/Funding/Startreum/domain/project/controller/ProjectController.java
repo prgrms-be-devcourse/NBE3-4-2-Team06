@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+
 
 @RestController
 @RequestMapping("/api")
@@ -17,7 +19,7 @@ public class ProjectController {
     private final ProjectService projectService;
     private final JwtUtil jwtUtil;
 
-    @PostMapping("/projects")
+    @PostMapping("/create/projects")
     public ResponseEntity<ProjectCreateResponseDto> createProject(
             @RequestHeader("Authorization") String token,
             @RequestBody ProjectCreateRequestDto projectRequest) {
@@ -28,6 +30,6 @@ public class ProjectController {
         // 2. 프로젝트 생성 서비스 호출
         ProjectCreateResponseDto response = projectService.createProject(projectRequest, email);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.created(URI.create("/api/create/projects/" + response.projectId())).body(response);
     }
 }
