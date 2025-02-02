@@ -24,7 +24,7 @@ public class ProjectService {
     private final UserRepository userRepository;
 
     @Transactional
-    public ProjectCreateResponseDto createProject(String userId, ProjectCreateRequestDto projectCreateRequestDto) {
+    public ProjectCreateResponseDto createProject(ProjectCreateRequestDto projectCreateRequestDto, String userId) {
 
         //사용자 검증
         User user = userRepository.findByEmail(userId).orElseThrow(() ->

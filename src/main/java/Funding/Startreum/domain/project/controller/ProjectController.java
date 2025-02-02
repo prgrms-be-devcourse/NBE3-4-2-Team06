@@ -26,7 +26,7 @@ public class ProjectController {
         String email = jwtUtil.getEmailFromToken(token.replace("Bearer ", ""));
 
         // 2. 프로젝트 생성 서비스 호출
-        ProjectCreateResponseDto response = projectService.createProject(email, projectRequest);
+        ProjectCreateResponseDto response = projectService.createProject(projectRequest, email);
 
         return ResponseEntity.ok(response);
     }
