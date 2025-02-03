@@ -1,5 +1,7 @@
 package Funding.Startreum.domain.users;
 
+import Funding.Startreum.common.util.JwtUtil;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +15,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     //  Refresh Token 저장소 (임시 Map 사용 → DB 또는 Redis로 변경 가능)
     private final Map<String, String> refreshTokenStorage = new HashMap<>();
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     // 허용된 역할 목록 (처음에는 ADMIN 포함)
@@ -89,7 +93,6 @@ public class UserService {
 
         // 인증 성공: 응답 DTO 생성
         return new UserResponse(
-                user.getUserId(),
                 user.getName(),
                 user.getEmail(),
                 user.getRole(),
@@ -118,5 +121,57 @@ public class UserService {
         return userRepository.findByName(name)
                 .orElseThrow(() -> new IllegalArgumentException("해당 이름의 사용자를 찾을 수 없습니다."));
     }
-}
 
+    // 사용자 마이페이지 조회
+    public UserResponse getUserProfile(String name, String loggedInUsername) {
+        System.out.println("🔍 프로필 조회: 요청한 사용자 = " + name + ", 로그인한 사용자 = " + loggedInUsername);
+
+        User loggedInUser = userRepository.findByName(loggedInUsername)
+                .orElseThrow(() -> {
+                    System.out.println("❌ 현재 로그인한 사용자 정보 없음");
+                    return new IllegalArgumentException("현재 로그인한 사용자를 찾을 수 없습니다.");
+                });
+
+        User targetUser = userRepository.findByName(name)
+                .orElseThrow(() -> {
+                    System.out.println("❌ 요청된 사용자 정보 없음: " + name);
+                    return new IllegalArgumentException("해당 사용자를 찾을 수 없습니다.");
+                });
+
+        // 🔹 본인 또는 ADMIN 역할만 프로필 조회 가능
+        if (!loggedInUser.getName().equalsIgnoreCase(targetUser.getName())
+                && !loggedInUser.getRole().name().equalsIgnoreCase("ADMIN")) {
+            System.out.println("⛔ 권한 없음: " + loggedInUser.getName() + "이(가) " + targetUser.getName() + "의 정보를 조회하려 함");
+            throw new AccessDeniedException("권한이 없습니다.");
+        }
+
+        System.out.println("✅ 프로필 조회 성공: " + targetUser.getName());
+
+        return new UserResponse(
+                targetUser.getName(),
+                targetUser.getEmail(),
+                targetUser.getRole(),
+                targetUser.getCreatedAt(),
+                targetUser.getUpdatedAt()
+        );
+    }
+
+
+    // ✅ 이메일 업데이트 (PUT 요청)
+    public void updateUserEmail(String name, String newEmail) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // 이메일 중복 확인
+        if (userRepository.findByEmail(newEmail).isPresent()) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        // 이메일 업데이트
+        user.setEmail(newEmail);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+
+}
