@@ -69,7 +69,7 @@ public class SponsorControllerTest {
         given(sponsorService.getFundingList(eq(TEST_EMAIL), any(Pageable.class))).willReturn(response);
 
         ResultActions result = mockMvc.perform(
-                get("/api/sponsor")
+                get("/api/sponsor/sponsoredList")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON));
 

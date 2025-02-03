@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 
-public interface FundingRepository extends JpaRepository<Funding, Long> {
+public interface FundingRepository extends JpaRepository<Funding, Integer> {
     @Query("""
         SELECT f FROM Funding f
         JOIN FETCH f.project p
