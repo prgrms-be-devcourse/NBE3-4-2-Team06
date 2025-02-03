@@ -1,9 +1,9 @@
 package Funding.Startreum.domain.project;
 
 import Funding.Startreum.domain.comment.Comment;
-import Funding.Startreum.domain.reward.Reward;
-import Funding.Startreum.domain.users.User;
 import Funding.Startreum.domain.funding.Funding;
+import Funding.Startreum.domain.reward.entity.Reward;
+import Funding.Startreum.domain.users.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

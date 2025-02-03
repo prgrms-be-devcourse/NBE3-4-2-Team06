@@ -1,4 +1,4 @@
-package Funding.Startreum.domain.reward;
+package Funding.Startreum.domain.reward.entity;
 
 import Funding.Startreum.domain.project.Project;
 import jakarta.persistence.*;
@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -26,4 +27,8 @@ public class Reward {
     private String description; // 리워드 설명
 
     private BigDecimal amount; // 리워드 최소 기준 금액
+
+    private LocalDateTime createdAt; // 생성 일자
+
+    private LocalDateTime updatedAt; // 수정 일자
 }

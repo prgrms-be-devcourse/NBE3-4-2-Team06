@@ -6,6 +6,7 @@ import Funding.Startreum.domain.users.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -66,7 +67,8 @@ public class SecurityConfig {
                                 // ✅ 이메일 수정 API (로그인 필요)
                                 .requestMatchers("/api/users/profile/modify/{name}").authenticated()
 
-
+                                // ✅ 리워드 조회는 누구나 접근 가능
+                                .requestMatchers(HttpMethod.GET, "/api/reward/{projectId}").permitAll()
 
                                 // ✅ 그 외 모든 요청은 인증 필요
                                 .anyRequest().authenticated()
