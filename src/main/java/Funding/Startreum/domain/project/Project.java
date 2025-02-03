@@ -1,6 +1,6 @@
 package Funding.Startreum.domain.project;
 
-import Funding.Startreum.domain.comment.Comment;
+import Funding.Startreum.domain.comment.entity.Comment;
 import Funding.Startreum.domain.reward.Reward;
 import Funding.Startreum.domain.users.User;
 import Funding.Startreum.domain.funding.Funding;
