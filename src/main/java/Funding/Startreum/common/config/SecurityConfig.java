@@ -57,11 +57,16 @@ public class SecurityConfig {
                                 // ✅ 프로필 페이지 (View)는 누구나 접근 가능
                                 .requestMatchers("/profile/{name}").permitAll()
 
-                                // ✅ 프로필 수정 페이지 접근 허용 (로그인된 사용자만)
-                                .requestMatchers("/profile/modify/{name}").authenticated()
+                                // ✅ 프로필 수정 페이지 접근 허용 (로그인 없이 가능)
+                                .requestMatchers("/profile/modify/{name}").permitAll()
 
                                 // ✅ 프로필 API는 인증된 사용자만 접근 가능
                                 .requestMatchers("/api/users/profile/{name}").hasAnyRole("ADMIN", "BENEFICIARY", "SPONSOR")
+
+                                // ✅ 이메일 수정 API (로그인 필요)
+                                .requestMatchers("/api/users/profile/modify/{name}").authenticated()
+
+
 
                                 // ✅ 그 외 모든 요청은 인증 필요
                                 .anyRequest().authenticated()

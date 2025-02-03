@@ -156,4 +156,22 @@ public class UserService {
         );
     }
 
+
+    // ✅ 이메일 업데이트 (PUT 요청)
+    public void updateUserEmail(String name, String newEmail) {
+        User user = userRepository.findByName(name)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // 이메일 중복 확인
+        if (userRepository.findByEmail(newEmail).isPresent()) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        // 이메일 업데이트
+        user.setEmail(newEmail);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+
 }

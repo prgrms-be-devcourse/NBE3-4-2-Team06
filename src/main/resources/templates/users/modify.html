@@ -23,8 +23,14 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", async function () {
-        const username = window.location.pathname.split("/").pop();
+        const username = decodeURIComponent(window.location.pathname.split("/").slice(-1)[0]);
         const token = localStorage.getItem("accessToken");
+
+        if (!token) {
+            alert("로그인이 필요합니다.");
+            window.close();
+            return;
+        }
 
         try {
             const response = await fetch(`/api/users/profile/${username}`, {
@@ -52,28 +58,38 @@
     document.getElementById("modifyForm").addEventListener("submit", async function (e) {
         e.preventDefault();
 
-        const username = window.location.pathname.split("/").pop();
+        const username = decodeURIComponent(window.location.pathname.split("/").slice(-1)[0]);
         const updatedEmail = document.getElementById("editUserEmail").value;
         const token = localStorage.getItem("accessToken");
 
+        if (!updatedEmail.trim()) {
+            alert("이메일을 입력하세요.");
+            return;
+        }
+
         try {
+            console.log("업데이트 요청 데이터:", JSON.stringify({ newEmail: updatedEmail })); // 디버깅용 로그
+
             const response = await fetch(`/api/users/profile/modify/${username}`, {
                 method: "PUT",
                 headers: {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ email: updatedEmail })
+                body: JSON.stringify({ newEmail: updatedEmail })  // JSON 필드명 수정
             });
 
-            if (!response.ok) throw new Error("이메일 업데이트 실패");
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "이메일 업데이트 실패");
+            }
 
             alert("이메일이 성공적으로 수정되었습니다.");
             window.opener.location.reload();  // 부모창 새로고침
             window.close();
         } catch (error) {
             console.error("업데이트 오류:", error);
-            alert("업데이트 중 오류가 발생했습니다.");
+            alert(`업데이트 중 오류가 발생했습니다: ${error.message}`);
         }
     });
 </script>

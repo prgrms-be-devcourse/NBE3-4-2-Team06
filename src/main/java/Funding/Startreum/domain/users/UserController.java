@@ -1,6 +1,7 @@
 package Funding.Startreum.domain.users;
 
 import Funding.Startreum.common.util.JwtUtil;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -194,14 +195,23 @@ public class UserController {
                 user.getUpdatedAt()
         );
 
-        System.out.println("✅ 최종 응답 데이터:");
-        System.out.println("   - 사용자명: " + userProfile.name());
-        System.out.println("   - 이메일: " + userProfile.email());
-        System.out.println("   - 역할: " + userProfile.role());
 
         return ResponseEntity.ok(Map.of(
                 "status", "success",
                 "data", userProfile
         ));
     }
+
+    // ✅ 이메일 수정 API (PUT)
+    @PutMapping("profile/modify/{name}")
+    public ResponseEntity<Map<String, String>> updateEmail(
+            @PathVariable String name,
+            @Valid @RequestBody EmailUpdateRequest request
+    ) {
+        userService.updateUserEmail(name, request.newEmail());
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "이메일이 성공적으로 변경되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
 }
