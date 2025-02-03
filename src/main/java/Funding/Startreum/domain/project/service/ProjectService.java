@@ -26,7 +26,7 @@ public class ProjectService {
 
     @Transactional
     public ProjectUpdateResponseDto modifyProject(Integer projectId, ProjectUpdateRequestDto projectUpdateRequestDto, String token) {
-        String email = jwtUtil.getEmailFromToken(token);
+        String email = jwtUtil.getEmailFromToken(token.replace("Bearer ", ""));
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용자를 찾을 수 없습니다"));    //사용자를 찾을 수 없을 시 401 에러
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 프로젝트를 찾을 수 없습니다."));    //프로젝트를 찾을 수 없을 시 404 에러
 
