@@ -39,3 +39,5 @@ out/
 
 ### Custom ###
 application.properties
+/http-test.http
+/src/main/java/Funding/Startreum/domain/project/ProjectRepository.java
