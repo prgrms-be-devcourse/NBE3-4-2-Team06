@@ -5,8 +5,11 @@ import Funding.Startreum.domain.comment.dto.response.CommentResponse;
 import Funding.Startreum.domain.comment.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +26,14 @@ public class CommentRestController {
     public ResponseEntity<?> createComment(
             @PathVariable("projectId") int projectId,
             @Valid @RequestBody CommentCreateRequest request,
-            UserDetails userDetails
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
         CommentResponse response = service.createComment(projectId, request, userDetails.getUsername());
 
-        return ResponseEntity.ok(
-                Map.of("status", "success",
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(
+                    Map.of("status", "success",
                         "message", "댓글 생성에 성공했습니다.",
                         "data", response
                 )
