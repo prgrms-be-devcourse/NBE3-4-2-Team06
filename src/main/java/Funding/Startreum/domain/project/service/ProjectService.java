@@ -4,6 +4,7 @@ package Funding.Startreum.domain.project.service;
 import Funding.Startreum.common.util.JwtUtil;
 import Funding.Startreum.domain.project.Project;
 import Funding.Startreum.domain.project.dto.ProjectUpdateRequestDto;
+import Funding.Startreum.domain.project.dto.ProjectUpdateResponseDto;
 import Funding.Startreum.domain.project.repository.ProjectRepository;
 import Funding.Startreum.domain.users.User;
 import Funding.Startreum.domain.users.UserRepository;
@@ -24,7 +25,7 @@ public class ProjectService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Project modifyProject(Integer projectId, ProjectUpdateRequestDto projectUpdateRequestDto, String token) {
+    public ProjectUpdateResponseDto modifyProject(Integer projectId, ProjectUpdateRequestDto projectUpdateRequestDto, String token) {
         String email = jwtUtil.getEmailFromToken(token);
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용자를 찾을 수 없습니다"));    //사용자를 찾을 수 없을 시 401 에러
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 프로젝트를 찾을 수 없습니다."));    //프로젝트를 찾을 수 없을 시 404 에러
@@ -52,7 +53,15 @@ public class ProjectService {
 
         project.setUpdatedAt(LocalDateTime.now());
 
-        return projectRepository.save(project);
+        return new ProjectUpdateResponseDto(
+                project.getProjectId(),
+                project.getTitle(),
+                project.getDescription(),
+                project.getFundingGoal(),
+                project.getStartDate(),
+                project.getEndDate(),
+                project.getUpdatedAt() // 수정된 시간
+        );
     }
 
 }

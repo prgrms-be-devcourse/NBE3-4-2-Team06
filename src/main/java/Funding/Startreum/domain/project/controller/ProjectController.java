@@ -3,6 +3,7 @@ package Funding.Startreum.domain.project.controller;
 
 import Funding.Startreum.domain.project.Project;
 import Funding.Startreum.domain.project.dto.ProjectUpdateRequestDto;
+import Funding.Startreum.domain.project.dto.ProjectUpdateResponseDto;
 import Funding.Startreum.domain.project.service.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,9 @@ public class ProjectController {
 
     @PutMapping("/modify/{projectId}")
     @PreAuthorize("hasRole('BENEFICIARY')") //수혜자만 수정 가능
-    public ResponseEntity<?> modifyProject(@PathVariable Integer projectId, @RequestHeader("Authorization") String token, @RequestBody ProjectUpdateRequestDto projectUpdateRequestDto) {
-        Project updatedProject = projectService.modifyProject(projectId, projectUpdateRequestDto, token);
+    public ResponseEntity<?> modifyProject(@PathVariable Integer projectId, @RequestHeader("Authorization") String token, @RequestBody @Valid ProjectUpdateRequestDto projectUpdateRequestDto) {
+        ProjectUpdateResponseDto updatedProject = projectService.modifyProject(projectId, projectUpdateRequestDto, token);
+
 
         return ResponseEntity.ok(Map.of(
                 "statusCode", 200,
