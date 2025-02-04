@@ -10,13 +10,11 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -41,7 +39,7 @@ public class SecurityConfig {
 
     // SecurityFilterChain Bean 등록
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,  JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 추가
                 .csrf(AbstractHttpConfigurer::disable) //  CSRF 비활성화 (REST API 방식)
@@ -49,9 +47,18 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
 
                                 .requestMatchers("/", "/home", "/index.html").permitAll()
-                                .requestMatchers("/api/users/logout").permitAll()  // ✅ 로그아웃 요청은 인증 없이 가능
+
+                                // ✅ 로그아웃 요청은 인증 없이 가능
+                                .requestMatchers("/api/users/logout").permitAll()
+
                                 // ✅ 정적 리소스 허용 (CSS, JS, Images 등)
                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+
+                                // ✅ 검색 페이지(View) 접근 허용
+                                .requestMatchers("/projects/search").permitAll()
+
+                                // ✅ 검색 API 접근 허용
+                                .requestMatchers("/api/projects/search").permitAll()
 
                                 // ✅ 회원가입, 회원생성 ,로그인, 중복 확인 API 허용
                                 .requestMatchers("/api/users/signup", "/api/users/registrar", "/api/users/login", "/api/users/check-name", "/api/users/check-email").permitAll()
@@ -62,9 +69,6 @@ public class SecurityConfig {
                                 // ✅ 프로필 수정 페이지 접근 허용 (로그인 없이 가능)
                                 .requestMatchers("/profile/modify/{name}").permitAll()
 
-                                // ✅ 댓글 조회 접근 허용 (로그인 없이 가능)
-                                .requestMatchers("/api/comment/{projectId}").permitAll()
-
                                 // ✅ 프로필 API는 인증된 사용자만 접근 가능
                                 .requestMatchers("/api/users/profile/{name}").hasAnyRole("ADMIN", "BENEFICIARY", "SPONSOR")
 
@@ -74,7 +78,10 @@ public class SecurityConfig {
 
                                 // ✅ 그 외 모든 요청은 인증 필요
                                 .anyRequest().authenticated()
-                        //  .anyRequest().permitAll() // ✅ 모든 요청 허용 (테스트용)
+
+                        // ✅ 모든 요청 허용 (테스트용)
+                        // .anyRequest().permitAll()
+
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
                 .formLogin(AbstractHttpConfigurer::disable) // 기본 로그인 폼 비활성화 (Spring이 가로채지 않도록)
