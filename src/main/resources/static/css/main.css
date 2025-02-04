@@ -3,20 +3,6 @@
 }
 
 @media (max-width: 768px) {
-    /* 헤더 정렬 변경 */
-    header .container {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    header nav {
-        margin-top: 10px;
-    }
-
-    header .btn {
-        margin: 5px 0;
-    }
-
     /* 카드 간격 조정 */
     .card {
         margin-bottom: 20px;
