@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class CommentService {
 
+    final private CommentRepository repository;
     final private UserRepository userRepository;
     final private ProjectRepository projectRepository;
 
@@ -32,6 +33,7 @@ public class CommentService {
         return comments.stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());     
+    }
 
     @Transactional
     public CommentResponse createComment(int projectId, CommentCreateRequest request, String username) {
@@ -67,26 +69,28 @@ public class CommentService {
 
         return mapToDto(comment);
     }
+  
+   @Transactional
+    public void deleteComment(int commentId, String username) {
+        Comment comment = repository.findByCommentId(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다 : " + commentId));
 
-    private CommentResponse mapToDto(Comment comment) {
-        return new CommentResponse(
-                comment.getCommentId(),
-                comment.getProject().getProjectId(),
-                comment.getUser().getUserId(),
-                comment.getContent(),
-                comment.getCreatedAt(),
-                comment.getUpdatedAt()
-        );
-    }          
+        if (!comment.getUser().getName().equals(username)) {
+            throw new AccessDeniedException("댓글 삭제 권한이 없습니다.");
+        }
 
-    private CommentResponse mapToDto(Comment comment) {
-        return new CommentResponse(
-                comment.getCommentId(),
-                comment.getProject().getProjectId(),
-                comment.getUser().getUserId(),
-                comment.getContent(),
-                comment.getCreatedAt(),
-                comment.getUpdatedAt()
-        );
+        repository.delete(comment);
     }
+
+    private CommentResponse mapToDto(Comment comment) {
+        return new CommentResponse(
+                comment.getCommentId(),
+                comment.getProject().getProjectId(),
+                comment.getUser().getUserId(),
+                comment.getContent(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt()
+        );
+    }       
+
 }
