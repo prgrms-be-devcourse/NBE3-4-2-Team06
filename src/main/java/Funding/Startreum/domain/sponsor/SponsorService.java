@@ -14,7 +14,11 @@ public class SponsorService {
 
     private final FundingRepository fundingRepository;
 
-    // 후원 목록 조회 로직
+    /**
+     * 후원 목록 조회 로직
+     * @param username 목록 조회할 후원자 이름
+     * @param pageable 페이징
+    */
     @Transactional
     public SponListResponse getFundingList(String username, Pageable pageable) {
 
@@ -55,11 +59,15 @@ public class SponsorService {
 
     }
 
-    // 후원 참여 로직
+    /**
+     * 후원 참여 로직
+     * @param email 후원에 참여할 후원자 이메일
+     * @param projectId 후원할 projectId
+     */
     @Transactional
-    public FudingAttendResponse getAttendFunding(String email, Integer fundingId) {
+    public FudingAttendResponse getAttendFunding(String email, Integer projectId) {
         try {
-            Funding funding = fundingRepository.findById(fundingId)
+            Funding funding = fundingRepository.findById(projectId)
                     .orElseThrow(() -> new IllegalArgumentException("후원 정보 불러오기에 실패했습니다. 필수 필드를 확인해주세요."));
 
             if (!funding.getSponsor().getEmail().equals(email)) {
