@@ -1,4 +1,4 @@
-package Funding.Startreum.domain.virtualaccount;
+package Funding.Startreum.domain.virtualaccount.entity;
 
 import Funding.Startreum.domain.users.User;
 import jakarta.persistence.*;
