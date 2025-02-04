@@ -1,14 +1,16 @@
 package Funding.Startreum.domain.comment.controller;
 
+import Funding.Startreum.domain.comment.dto.request.CommentRequest;
+import Funding.Startreum.domain.comment.dto.response.CommentResponse;
 import Funding.Startreum.domain.comment.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
@@ -22,8 +24,7 @@ import java.util.Map;
 @RequestMapping("/api/comment")
 @RequiredArgsConstructor
 public class CommentRestController {
-    private final CommentService service;
-
+    private final CommentService service;   
 
     @GetMapping("/{projectId}")
     public ResponseEntity<?> getComment(
@@ -61,12 +62,30 @@ public class CommentRestController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(
-                    Map.of("status", "success",
+                    Map.of(
+                        "status", "success",
                         "message", "댓글 생성에 성공했습니다.",
                         "data", response
                 )
         );
     }
+  
+    @PutMapping("/{commentId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> modifyComment(
+            @PathVariable("commentId") int commentId,
+            @RequestBody @Valid CommentRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+            ) {
+        CommentResponse response = service.modifyComment(request, commentId, userDetails.getUsername());
 
-
+        return ResponseEntity.ok(                
+                    Map.of(
+                        "status", "success",
+                        "message", "댓글 에 성공했습니다.",
+                        "data", response
+                )
+        );
+    }       
+                       
 }

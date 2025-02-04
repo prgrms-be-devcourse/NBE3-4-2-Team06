@@ -1,4 +1,5 @@
 package Funding.Startreum.domain.comment.dto.response;
+
 import java.time.LocalDateTime;
 
 public record CommentResponse(
@@ -9,5 +10,4 @@ public record CommentResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-}
 }
