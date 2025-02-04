@@ -1,5 +1,6 @@
 package Funding.Startreum.domain.comment.dto.response;
 import java.time.LocalDateTime;
+
 public record CommentResponse(
         int commentId,
         int projectId,
@@ -8,4 +9,5 @@ public record CommentResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
+}
 }
