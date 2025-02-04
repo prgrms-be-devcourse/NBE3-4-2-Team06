@@ -60,12 +60,14 @@ public class SecurityConfig {
                                 // ✅ 프로필 수정 페이지 접근 허용 (로그인 없이 가능)
                                 .requestMatchers("/profile/modify/{name}").permitAll()
 
+                                // ✅ 댓글 조회 접근 허용 (로그인 없이 가능)
+                                .requestMatchers("/api/comment/{projectId}").permitAll()
+
                                 // ✅ 프로필 API는 인증된 사용자만 접근 가능
                                 .requestMatchers("/api/users/profile/{name}").hasAnyRole("ADMIN", "BENEFICIARY", "SPONSOR")
 
                                 // ✅ 이메일 수정 API (로그인 필요)
                                 .requestMatchers("/api/users/profile/modify/{name}").authenticated()
-
 
 
                                 // ✅ 그 외 모든 요청은 인증 필요
@@ -93,7 +95,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:9090")); // 허용할 도메인 추가
+        configuration.setAllowedOrigins(List.of("http://localhost:9090", "http://localhost:8080")); // 허용할 도메인 추가
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); //  Authorization 헤더 추가
         configuration.setExposedHeaders(List.of("Authorization")); //  클라이언트가 Authorization 헤더 접근 가능하게
