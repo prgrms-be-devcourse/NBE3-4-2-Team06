@@ -28,15 +28,12 @@ public class InquiryListResponse {
         return new InquiryListResponse("error", statusCode, message, null);
     }
 
-    @Getter
-    @RequiredArgsConstructor
-    public static class InquiryData {
-        private final Integer inquiryId;
-        private final Integer userId;
-        private final String title;
-        private final String content;
-        private final String status;
-        private final LocalDateTime createdAt;
-        private final LocalDateTime updatedAt;
+    public record InquiryData(
+            Integer inquiryId,
+            Integer userId,
+            String title,
+            String content,
+            String status,
+            LocalDateTime createdAt, LocalDateTime updatedAt) {
     }
 }

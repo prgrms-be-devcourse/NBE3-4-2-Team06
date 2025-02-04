@@ -3,12 +3,15 @@ package Funding.Startreum.domain.funding.controller.AdminInquiryControllerTest;
 import Funding.Startreum.common.util.JwtUtil;
 import Funding.Startreum.domain.admin.inquiry.InquiryAdminService;
 import Funding.Startreum.domain.admin.inquiry.InquiryListResponse;
+import Funding.Startreum.domain.users.User;
+import Funding.Startreum.domain.users.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -22,8 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -40,8 +43,14 @@ public class AdminInquiryControllerTest {
     @MockitoBean
     private InquiryAdminService inquiryAdminService;
 
+    @MockitoBean
+    private UserRepository userRepository;
+
     private String adminToken;
     private String userToken;
+    private User adminUser;
+    private User normalUser;
+
     private static final String ADMIN_NAME = "testAdmin";
     private static final String ADMIN_EMAIL = "admin@test.com";
     private static final String ADMIN_ROLE = "ADMIN";
@@ -53,6 +62,9 @@ public class AdminInquiryControllerTest {
     void setUp() {
         adminToken = jwtUtil.generateAccessToken(ADMIN_NAME, ADMIN_EMAIL, ADMIN_ROLE);
         userToken = jwtUtil.generateAccessToken(USER_NAME, USER_EMAIL, USER_ROLE);
+
+        adminUser = new User();
+        normalUser = new User();
     }
 
     @Test
@@ -82,7 +94,9 @@ public class AdminInquiryControllerTest {
         );
 
         InquiryListResponse response = InquiryListResponse.success(inquiryDataList);
-        when(inquiryAdminService.getInquiries(anyString())).thenReturn(response);
+
+        when(userRepository.findByEmail(ADMIN_EMAIL)).thenReturn(Optional.of(adminUser));
+        when(inquiryAdminService.getInquiries(adminUser)).thenReturn(response);
 
         ResultActions result = mockMvc.perform(get("/api/admin/inquiries")
                 .header("Authorization", "Bearer " + adminToken)
@@ -107,7 +121,10 @@ public class AdminInquiryControllerTest {
     void getInquiries_NonAdminFail() throws Exception {
 
         InquiryListResponse errorResponse = InquiryListResponse.error(403, "관리자 권한이 없습니다.");
-        when(inquiryAdminService.getInquiries(anyString())).thenReturn(errorResponse);
+
+        when(userRepository.findByEmail(USER_EMAIL)).thenReturn(Optional.of(normalUser));
+
+        when(inquiryAdminService.getInquiries(normalUser)).thenReturn(errorResponse);
 
         ResultActions result = mockMvc.perform(get("/api/admin/inquiries")
                 .header("Authorization", "Bearer " + userToken)
