@@ -1,5 +1,6 @@
 package Funding.Startreum.domain.comment.service;
 
+
 import Funding.Startreum.domain.comment.dto.request.CommentCreateRequest;
 import Funding.Startreum.domain.comment.dto.response.CommentResponse;
 import Funding.Startreum.domain.comment.entity.Comment;
@@ -12,15 +13,24 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class CommentService {
 
-    final private CommentRepository repository;
     final private UserRepository userRepository;
     final private ProjectRepository projectRepository;
+
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getComment(int projectId) {
+        List<Comment> comments = repository.findByProject_ProjectId(projectId);
+
+        return comments.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());     
 
     @Transactional
     public CommentResponse createComment(int projectId, CommentCreateRequest request, String username) {
@@ -42,6 +52,14 @@ public class CommentService {
 
         return mapToDto(comment);
     }
+      
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getComment(int projectId) {
+        List<Comment> comments = repository.findByProject_ProjectId(projectId);
+
+        return comments.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());   
 
     private CommentResponse mapToDto(Comment comment) {
         return new CommentResponse(
