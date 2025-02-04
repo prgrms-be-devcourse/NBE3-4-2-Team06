@@ -34,10 +34,10 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
-        return new CustomUserDetailsService(userRepository);
-    }
+//    @Bean
+//    public UserDetailsService userDetailsService(UserRepository userRepository) {
+//        return new CustomUserDetailsService(userRepository);
+//    }
 
     // SecurityFilterChain Bean 등록
     @Bean
@@ -73,8 +73,8 @@ public class SecurityConfig {
 
 
                                 // ✅ 그 외 모든 요청은 인증 필요
-                                .anyRequest().authenticated()
-                        //  .anyRequest().permitAll() // ✅ 모든 요청 허용 (테스트용)
+                                //.anyRequest().authenticated()
+                                  .anyRequest().permitAll() // ✅ 모든 요청 허용 (테스트용)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
                 .formLogin(AbstractHttpConfigurer::disable) // 기본 로그인 폼 비활성화 (Spring이 가로채지 않도록)
