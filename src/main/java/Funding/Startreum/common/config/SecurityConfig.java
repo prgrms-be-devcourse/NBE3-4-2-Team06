@@ -10,11 +10,13 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -39,7 +41,7 @@ public class SecurityConfig {
 
     // SecurityFilterChain Bean 등록
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,  JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 추가
                 .csrf(AbstractHttpConfigurer::disable) //  CSRF 비활성화 (REST API 방식)
@@ -52,7 +54,7 @@ public class SecurityConfig {
                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
 
                                 // ✅ 회원가입, 회원생성 ,로그인, 중복 확인 API 허용
-                                .requestMatchers("/api/users/signup", "/api/users/registrar","/api/users/login", "/api/users/check-name", "/api/users/check-email").permitAll()
+                                .requestMatchers("/api/users/signup", "/api/users/registrar", "/api/users/login", "/api/users/check-name", "/api/users/check-email").permitAll()
 
                                 // ✅ 프로필 페이지 (View)는 누구나 접근 가능
                                 .requestMatchers("/profile/{name}").permitAll()
@@ -60,12 +62,14 @@ public class SecurityConfig {
                                 // ✅ 프로필 수정 페이지 접근 허용 (로그인 없이 가능)
                                 .requestMatchers("/profile/modify/{name}").permitAll()
 
+                                // ✅ 댓글 조회 접근 허용 (로그인 없이 가능)
+                                .requestMatchers("/api/comment/{projectId}").permitAll()
+
                                 // ✅ 프로필 API는 인증된 사용자만 접근 가능
                                 .requestMatchers("/api/users/profile/{name}").hasAnyRole("ADMIN", "BENEFICIARY", "SPONSOR")
 
                                 // ✅ 이메일 수정 API (로그인 필요)
                                 .requestMatchers("/api/users/profile/modify/{name}").authenticated()
-
 
 
                                 // ✅ 그 외 모든 요청은 인증 필요

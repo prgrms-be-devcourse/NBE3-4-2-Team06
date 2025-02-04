@@ -1,7 +1,7 @@
 package Funding.Startreum.domain.users;
 
 import Funding.Startreum.domain.admin.Admin;
-import Funding.Startreum.domain.comment.Comment;
+import Funding.Startreum.domain.comment.entity.Comment;
 import Funding.Startreum.domain.inquiry.Inquiry;
 import Funding.Startreum.domain.project.Project;
 import Funding.Startreum.domain.funding.Funding;
