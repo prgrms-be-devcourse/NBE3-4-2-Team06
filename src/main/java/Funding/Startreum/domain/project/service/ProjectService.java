@@ -22,7 +22,7 @@ public class ProjectService {
     private final UserRepository userRepository;
 
     public ProjectApprovalResponseDto requestApprove(Integer projectId, String token) {
-        String email = jwtUtil.getEmailFromToken(token);
+        String email = jwtUtil.getEmailFromToken(token.replace("Bearer ", ""));
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용자를 찾을 수 없습니다."));
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 프로젝트를 찾을 수 없습니다."));
 
