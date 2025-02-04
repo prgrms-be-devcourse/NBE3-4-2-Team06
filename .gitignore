@@ -39,3 +39,4 @@ out/
 
 ### Custom ###
 application.properties
+/src/main/java/Funding/Startreum/domain/users/CustomUserDetailsService.java
