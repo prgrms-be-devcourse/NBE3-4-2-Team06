@@ -16,17 +16,17 @@ public class AdminUserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public UserListResponseDTO getAllUsers() {
+    public UserListResponse getAllUsers() {
         List<User> users = userRepository.findAll();
 
-        UserListResponseDTO response = new UserListResponseDTO();
+        UserListResponse response = new UserListResponse();
         response.setStatus("ok");
         response.setStatusCode(200);
         response.setMessage("회원 목록 조회에 성공했습니다.");
 
-        List<UserListResponseDTO.UserDTO> userDTOs = users.stream()
+        List<UserListResponse.UserDTO> userDTOs = users.stream()
                 .map(user -> {
-                    UserListResponseDTO.UserDTO dto = new UserListResponseDTO.UserDTO();
+                    UserListResponse.UserDTO dto = new UserListResponse.UserDTO();
                     dto.setUserId(user.getUserId());
                     dto.setName(user.getName());
                     dto.setEmail(user.getEmail());
@@ -38,6 +38,28 @@ public class AdminUserService {
                 .collect(Collectors.toList());
 
         response.setData(userDTOs);
+        return response;
+    }
+
+    @Transactional
+    public UserDetailResponse getUserDetail(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        UserDetailResponse response = new UserDetailResponse();
+        response.setStatus("ok");
+        response.setStatusCode(200);
+        response.setMessage("회원 조회에 성공했습니다.");
+
+        UserDetailResponse.UserDTO userDTO = new UserDetailResponse.UserDTO();
+        userDTO.setUserId(user.getUserId());
+        userDTO.setName(user.getName());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setRole(user.getRole().name());
+        userDTO.setCreatedAt(user.getCreatedAt());
+        userDTO.setUpdatedAt(user.getUpdatedAt());
+
+        response.setData(userDTO);
         return response;
     }
 }

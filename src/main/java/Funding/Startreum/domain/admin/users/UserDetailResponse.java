@@ -4,15 +4,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
-public class UserListResponseDTO {
+public class UserDetailResponse {
     private String status;
     private int statusCode;
     private String message;
-    private List<UserDTO> data;
+    private UserDTO data;
 
     @Getter
     @Setter

@@ -17,6 +17,7 @@
             <th>역할</th>
             <th>가입일</th>
             <th>수정일</th>
+            <th>작업</th>
         </tr>
         </thead>
         <tbody>
@@ -27,6 +28,9 @@
             <td th:text="${user.role}"></td>
             <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
             <td th:text="${#temporals.format(user.updatedAt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+            <td>
+                <a th:href="@{/admin/users/{id}(id=${user.userId})}">상세보기</a>
+            </td>
         </tr>
         </tbody>
     </table>
