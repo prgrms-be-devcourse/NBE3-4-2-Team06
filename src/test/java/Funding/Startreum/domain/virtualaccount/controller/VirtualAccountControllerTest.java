@@ -51,6 +51,9 @@ class VirtualAccountControllerTest {
     private String ownerToken;     // 실제 계좌의 소유자
     private String notOwnerToken;  // 다른 계좌 소유자
 
+    /**
+     * 테스트 시작 전 계정 및 토큰을 설정합니다.
+     */
     @BeforeEach
     void setUp() {
         createAccount(100, "owner");
@@ -65,6 +68,12 @@ class VirtualAccountControllerTest {
         this.notOwnerToken = jwtUtil.generateAccessToken("other", "other@test.com", "SPONSOR");
     }
 
+    /**
+     * 가상 계좌 데이터를 설정하는 메서드입니다.
+     *
+     * @param accountId    계좌 ID
+     * @param accountOwner 계좌 소유자
+     */
     private void createAccount(int accountId, String accountOwner) {
         Funding.Startreum.domain.users.User user = new Funding.Startreum.domain.users.User();
         user.setName(accountOwner);
@@ -75,18 +84,28 @@ class VirtualAccountControllerTest {
                 .willReturn(Optional.of(mockAccount));
     }
 
-    private void createDetails(String adminUser, String ROLE) {
+    /**
+     * 사용자 정보를 설정하는 메서드입니다.
+     *
+     * @param username 사용자 이름
+     * @param role     사용자 역할 (ADMIN, SPONSOR 등)
+     */
+    private void createDetails(String username, String role) {
         UserDetails adminUserDetails =
                 User.builder()
-                        .username(adminUser)
+                        .username(username)
                         .password("1234")
-                        .roles(ROLE)
+                        .roles(role)
                         .build();
 
-        given(userDetailsService.loadUserByUsername(adminUser))
+        given(userDetailsService.loadUserByUsername(username))
                 .willReturn(adminUserDetails);
     }
 
+    /**
+     * ADMIN 계정으로 존재하는 계좌를 조회합니다.
+     * 기대 결과: 200 OK
+     */
     @Test
     @DisplayName("[조회 200] ADMIN 계정으로 계좌 조회 시")
     void getAccountTransactionsTest() throws Exception {
@@ -117,6 +136,10 @@ class VirtualAccountControllerTest {
                 .andExpect(jsonPath("$.data.accountId").value(accountId));
     }
 
+    /**
+     * OWNER 계정으로 계좌를 조회합니다.
+     * 기대 결과: 200 OK
+     */
     @Test
     @DisplayName("[조회 200] OWNER 계정으로 계좌 조회 시")
     void getAccountTransactionsTest2() throws Exception {
@@ -147,6 +170,10 @@ class VirtualAccountControllerTest {
                 .andExpect(jsonPath("$.data.accountId").value(accountId));
     }
 
+    /**
+     * OWNER 계정으로 존재하지 않는 계좌를 조회할 때 예외를 발생시킵니다.
+     * 기대 결과: 404 Not Found
+     */
     @Test
     @DisplayName("[조회 404] OWNER 계정으로 없는 계좌 조회 시")
     void getAccountTransactionsTest3() throws Exception {
@@ -169,6 +196,10 @@ class VirtualAccountControllerTest {
                 .andExpect(jsonPath("$.data").isEmpty());
     }
 
+    /**
+     * NOT OWNER 계정으로 다른 사람의 계좌를 조회할 때 예외를 발생시킵니다.
+     * 기대 결과: 403 Forbidden
+     */
     @Test
     @DisplayName("[조회 403] notOwnerToken 계정으로 OWNER 계좌 조회 시")
     void getAccountTransactionsTest4() throws Exception {
