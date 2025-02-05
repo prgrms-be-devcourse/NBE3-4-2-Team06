@@ -2,6 +2,7 @@ package Funding.Startreum.domain.virtualaccount.controller;
 
 import Funding.Startreum.common.util.JwtUtil;
 import Funding.Startreum.domain.users.CustomUserDetailsService;
+import Funding.Startreum.domain.virtualaccount.dto.request.AccountRequest;
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse;
 import Funding.Startreum.domain.virtualaccount.entity.VirtualAccount;
 import Funding.Startreum.domain.virtualaccount.exception.AccountNotFoundException;
@@ -23,8 +24,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -80,6 +84,7 @@ class VirtualAccountControllerTest {
         VirtualAccount mockAccount = new VirtualAccount();
         mockAccount.setAccountId(accountId);
         mockAccount.setUser(user);
+        mockAccount.setBalance(new BigDecimal("0.00"));
         given(virtualAccountRepository.findById(accountId))
                 .willReturn(Optional.of(mockAccount));
     }
@@ -201,7 +206,7 @@ class VirtualAccountControllerTest {
      * 기대 결과: 403 Forbidden
      */
     @Test
-    @DisplayName("[조회 403] notOwnerToken 계정으로 OWNER 계좌 조회 시")
+    @DisplayName("[조회 403] NOT OWNER 계정으로 OWNER 계좌 조회 시")
     void getAccountTransactionsTest4() throws Exception {
         // Given
         int accountId = 100;
@@ -226,4 +231,160 @@ class VirtualAccountControllerTest {
                 // Then
                 .andExpect(status().isForbidden());
     }
+
+    /**
+     * ADMIN 계정으로 존재하는 계좌에 잔액을 충전합니다.
+     * 기대 결과: 200 OK
+     */
+    @Test
+    @DisplayName("[충전 200] ADMIN 계정으로 존재하는 계좌 충전 시")
+    void chargeAccountTest1() throws Exception {
+        // Given
+        int accountId = 100;
+        BigDecimal chargeAmount = BigDecimal.valueOf(1000);
+
+        AccountRequest request = new AccountRequest(chargeAmount);
+
+        AccountResponse response = new AccountResponse(
+                0, accountId, chargeAmount, chargeAmount, LocalDateTime.now()
+        );
+
+        given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
+                .willReturn(response);
+
+        // When
+        mockMvc.perform(
+                        post("/api/account/{accountId}", accountId)
+                                .header("Authorization", "Bearer " + adminToken)
+                                .content("""
+                                {
+                                    "chargeAmount": 1000
+                                }
+                                """.stripIndent())
+                                .contentType(MediaType.APPLICATION_JSON)
+
+                )
+
+                // Then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.message").value("계좌 충전에 성공했습니다."))
+                .andExpect(jsonPath("$.data.accountId").value(accountId))
+                .andExpect(jsonPath("$.data.balance").value(1000));
+    }
+
+    /**
+     * OWNER 계정으로 존재하는 게좌에 잔액을 충전합니다.
+     * 기대 결과: 200 OK
+     */
+    @Test
+    @DisplayName("[충전 200] OWNER 계정으로 존재하는 계좌 충전 시")
+    void chargeAccountTest2() throws Exception {
+        // Given
+        int accountId = 100;
+        BigDecimal chargeAmount = BigDecimal.valueOf(1000);
+
+        AccountRequest request = new AccountRequest(chargeAmount);
+
+        AccountResponse response = new AccountResponse(
+                0, accountId, chargeAmount, chargeAmount, LocalDateTime.now()
+        );
+
+        given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
+                .willReturn(response);
+
+        // When
+        mockMvc.perform(
+                        post("/api/account/{accountId}", accountId)
+                                .header("Authorization", "Bearer " + ownerToken)
+                                .content("""
+                                {
+                                    "chargeAmount": 1000
+                                }
+                                """.stripIndent())
+                                .contentType(MediaType.APPLICATION_JSON)
+
+                )
+
+                // Then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.message").value("계좌 충전에 성공했습니다."))
+                .andExpect(jsonPath("$.data.accountId").value(accountId))
+                .andExpect(jsonPath("$.data.balance").value(1000));
+    }
+
+    /**
+     * OWNER 계정으로 존재하지 않는 게좌에 잔액을 충전합니다.
+     * 기대 결과: 404 NOT FOUND
+     */
+    @Test
+    @DisplayName("[충전 404] OWNER 계정으로 존재하지 않는 계좌 충전 시")
+    void chargeAccountTest3() throws Exception {
+        // Given
+        int accountId = 500;
+        BigDecimal chargeAmount = BigDecimal.valueOf(1000);
+        AccountRequest request = new AccountRequest(chargeAmount);
+
+        given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
+                .willThrow(new AccountNotFoundException(accountId));;
+
+        // When
+        mockMvc.perform(
+                        post("/api/account/{accountId}", accountId)
+                                .header("Authorization", "Bearer " + ownerToken)
+                                .content("""
+                                {
+                                    "chargeAmount": 1000
+                                }
+                                """.stripIndent())
+                                .contentType(MediaType.APPLICATION_JSON)
+
+                )
+
+                // Then
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value("해당 계좌를 찾을 수 없습니다 : " + accountId))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    /**
+     * NOT OWNER 계정으로 권힌이 없는 계좌에 잔액을 충전합니다.
+     * 기대 결과: 403 FORBIDDEN
+     */
+    @Test
+    @DisplayName("[충전 403] NOT OWNER 계정으로 OWNER 계좌 충전 시")
+    void chargeAccountTest4() throws Exception {
+        // Given
+        int accountId = 100;
+        BigDecimal chargeAmount = BigDecimal.valueOf(1000);
+        AccountRequest request = new AccountRequest(chargeAmount);
+        AccountResponse response = new AccountResponse(
+                0, accountId, chargeAmount, chargeAmount, LocalDateTime.now()
+        );
+
+        given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
+                .willReturn(response);
+
+        // When
+        mockMvc.perform(
+                        post("/api/account/{accountId}", accountId)
+                                .header("Authorization", "Bearer " + notOwnerToken)
+                                .content("""
+                                {
+                                    "chargeAmount": 1000
+                                }
+                                """.stripIndent())
+                                .contentType(MediaType.APPLICATION_JSON)
+
+                )
+
+                // Then
+                .andExpect(status().isForbidden());
+    }
+
+
+
+
 }

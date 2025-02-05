@@ -67,7 +67,6 @@ public class VirtualAccountService {
     // 계좌 충전
     @Transactional
     public AccountResponse charge(int accountId, AccountRequest request) {
-
         VirtualAccount account = repository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
 
