@@ -40,7 +40,7 @@ public class InquiryService {
                 inquiry.getInquiryId(),
                 inquiry.getTitle(),
                 inquiry.getContent(),
-                inquiry.getUser().getName(),
+                inquiry.getStatus(),
                 inquiry.getCreatedAt()
         );
 
