@@ -2,6 +2,7 @@ package Funding.Startreum.domain.funding.controller.InquiryCreateTest;
 
 import Funding.Startreum.common.util.JwtUtil;
 
+import Funding.Startreum.domain.inquiry.Inquiry;
 import Funding.Startreum.domain.inquiry.InquiryRequest;
 import Funding.Startreum.domain.inquiry.InquiryResponse;
 import Funding.Startreum.domain.inquiry.InquiryService;
@@ -67,7 +68,7 @@ public class InquiryControllerTest {
                 1,
                 request.title(),
                 request.content(),
-                "PENDING",
+                Inquiry.Status.PENDING,
                 LocalDateTime.of(2025, 1, 24, 12, 0)
         );
 

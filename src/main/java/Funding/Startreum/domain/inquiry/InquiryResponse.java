@@ -12,7 +12,7 @@ public record InquiryResponse (
             Integer inquiryId,
             String title,
             String content,
-            String status,
+            Inquiry.Status status,
             LocalDateTime createdAt
     ) {}
 
