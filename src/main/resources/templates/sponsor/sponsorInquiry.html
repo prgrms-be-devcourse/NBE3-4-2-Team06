@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>문의 작성</title>
+</head>
+<body>
+    <div id="sponsor-inquiry-container">
+        <h1>새로운 문의 작성</h1>
+
+        <form id="inquiry-form">
+            <div>
+                <label for="title">제목:</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+
+            <div>
+                <label for="content">내용:</label>
+                <textarea id="content" name="content" required></textarea>
+            </div>
+
+            <button type="submit">문의 제출</button>
+        </form>
+    </div>
+
+    <script>
+        // JWT 토큰을 localStorage에서 가져오는 함수
+        function getAuthToken() {
+            return localStorage.getItem('authToken');
+        }
+
+        // 문의 생성 함수
+        async function createInquiry(formData) {
+            try {
+                const response = await fetch('/api/sponsor/inquiries', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${getAuthToken()}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                const data = await response.json();
+                // 응답 처리 로직
+                if (response.status === 201) {
+                    alert('문의가 성공적으로 제출되었습니다.');
+                }
+            } catch (error) {
+                console.error('문의 제출 중 오류:', error);
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('inquiry-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = {
+                    title: document.getElementById('title').value,
+                    content: document.getElementById('content').value,
+                    projectId: document.getElementById('project-id').value
+                };
+                createInquiry(formData);
+            });
+        });
+    </script>
+</body>
+</html>

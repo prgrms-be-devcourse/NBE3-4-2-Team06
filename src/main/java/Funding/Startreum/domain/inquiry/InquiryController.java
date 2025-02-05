@@ -15,7 +15,7 @@ public class InquiryController {
     private final InquiryService inquiryService;
     private final JwtUtil jwtUtil;
 
-    @PostMapping("/inquiries")
+    @RequestMapping("/inquiries")
     public ResponseEntity<InquiryResponse> createInquiry(
             @RequestHeader("Authorization") String token,
             @RequestBody @Valid InquiryRequest request) {

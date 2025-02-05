@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>후원 프로젝트 목록</title>
+</head>
+<body>
+    <div id="sponsor-funding-container">
+        <h1>내 후원 프로젝트</h1>
+
+        <div id="sponsored-list">
+            <!-- 페이징된 후원 프로젝트 목록 -->
+            <table id="sponsored-projects-table">
+                <thead>
+                <tr>
+                    <th>프로젝트 ID</th>
+                    <th>프로젝트 명</th>
+                    <th>후원 금액</th>
+                    <th>상태</th>
+                </tr>
+                </thead>
+                <tbody id="sponsored-projects-body">
+                <!-- 동적으로 프로젝트 목록 로드 -->
+                </tbody>
+            </table>
+
+            <div id="pagination-controls">
+                <!-- 페이지네이션 컨트롤 -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // JWT 토큰을 localStorage에서 가져오는 함수
+        function getAuthToken() {
+            return localStorage.getItem('authToken');
+        }
+
+        // 후원 프로젝트 목록 불러오기
+        async function loadSponsoredProjects(page = 0) {
+            try {
+                const response = await fetch(`/api/sponsor/sponsoredList?page=${page}&size=5`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    }
+                });
+                const data = await response.json();
+                // 목록 렌더링 로직 구현
+            } catch (error) {
+                console.error('후원 프로젝트 목록 로드 중 오류:', error);
+            }
+        }
+
+        // 새 프로젝트 후원 신청
+        async function attendFunding(projectId) {
+            try {
+                const response = await fetch('/api/sponsor/funding', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${getAuthToken()}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ projectId })
+                });
+                const data = await response.json();
+                // 응답 처리 로직
+            } catch (error) {
+                console.error('프로젝트 후원 신청 중 오류:', error);
+            }
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSponsoredProjects();
+
+            document.getElementById('funding-attend-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const projectId = document.getElementById('project-id').value;
+                attendFunding(projectId);
+            });
+        });
+    </script>
+</body>
+</html>
