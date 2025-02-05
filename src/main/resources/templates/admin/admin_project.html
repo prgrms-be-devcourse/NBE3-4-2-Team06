@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title>프로젝트 관리 - 관리자</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/admin_main.css">
+</head>
+<body>
+
+<!-- Header -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<!-- 프로젝트 관리 섹션 -->
+<section class="container py-5">
+    <h1 class="fw-bold mb-4">프로젝트 관리</h1>
+
+    <!-- 상태 필터링 -->
+    <div class="mb-3">
+        <label for="statusFilter" class="form-label">승인 상태 선택:</label>
+        <select id="statusFilter" class="form-select">
+            <option value="">전체</option>
+            <option value="APPROVE">승인됨</option>
+            <option value="AWAITING_APPROVAL">승인 대기중</option>
+            <option value="REJECTED">거부됨</option>
+        </select>
+        <button class="btn btn-primary mt-2" onclick="loadProjects()">조회</button>
+    </div>
+
+    <!-- 프로젝트 리스트 -->
+    <table class="table table-bordered">
+        <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>프로젝트명</th>
+            <th>상태</th>
+        </tr>
+        </thead>
+        <tbody id="project-list">
+        <!-- JavaScript로 데이터 동적 추가 -->
+        </tbody>
+    </table>
+</section>
+
+<!-- Footer -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        loadProjects();
+    });
+
+    function loadProjects() {
+        const status = document.getElementById("statusFilter").value;
+        let url = "/api/admin/projects";
+        if (status) {
+            url += `?status=${status}`;
+        }
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const projectList = document.getElementById("project-list");
+                projectList.innerHTML = "";
+
+                data.forEach((project, index) => {
+                    projectList.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${project.title}</td>
+                            <td>${project.isApproved}</td>
+                        </tr>
+                    `;
+                });
+            })
+            .catch(error => console.error("프로젝트 불러오기 오류:", error));
+    }
+</script>
+
+</body>
+</html>

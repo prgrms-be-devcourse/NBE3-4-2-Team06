@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Startreum - 관리자 페이지</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/admin_main.css">
+</head>
+<body>
+
+<!-- Header -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<!-- 관리자 대시보드 섹션 -->
+<section class="bg-light py-5 text-center">
+    <div class="container">
+        <h1 class="fw-bold mb-3">관리자 페이지</h1>
+        <p class="text-muted mb-4">프로젝트 및 사용자 관리</p>
+        <div>
+            <button class="btn btn-primary me-2" onclick="location.href='/admin/users'">사용자 관리</button>
+            <button class="btn btn-outline-primary" onclick="window.location.href='/admin/project'">프로젝트 관리</button>
+
+        </div>
+    </div>
+</section>
+
+<!-- 최근 활동 로그 -->
+<section id="admin-logs" class="container py-5">
+    <h2 class="fw-bold mb-4">최근 활동 로그</h2>
+    <div class="list-group">
+        <a href="#" class="list-group-item list-group-item-action">사용자 A가 새로운 프로젝트를 등록함</a>
+        <a href="#" class="list-group-item list-group-item-action">사용자 B가 프로젝트 후원을 완료함</a>
+        <a href="#" class="list-group-item list-group-item-action">관리자가 프로젝트 C를 승인함</a>
+    </div>
+</section>
+
+<!-- 관리자 기능 섹션 -->
+<section id="admin-actions" class="bg-light py-5">
+    <div class="container">
+        <h2 class="fw-bold mb-4">관리자 기능</h2>
+        <div class="row">
+            <div class="col-md-4 col-sm-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">사용자 계정 관리</h5>
+                        <p class="text-muted">회원 정보 수정 및 삭제</p>
+                        <button class="btn btn-primary w-100" onclick="location.href='/admin/users'">관리하기</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">프로젝트 검토</h5>
+                        <p class="text-muted">등록된 프로젝트 승인 및 관리</p>
+                        <button class="btn btn-primary w-100" onclick="location.href='/admin/projects'">관리하기</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">신고 처리</h5>
+                        <p class="text-muted">사용자 신고 및 조치</p>
+                        <button class="btn btn-primary w-100" onclick="location.href='/admin/reports'">검토하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

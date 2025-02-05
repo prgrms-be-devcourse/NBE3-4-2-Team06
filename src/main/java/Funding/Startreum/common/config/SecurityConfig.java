@@ -49,6 +49,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ✅ 세션 비활성화 (JWT 사용)
                 .authorizeHttpRequests(authorize -> authorize
 
+
                         // ✅ 프로젝트 생성 API는 수혜자(ROLE_BENEFICIARY)만 접근 가능하도록 설정
                         .requestMatchers(HttpMethod.POST, "/api/beneficiary/create/projects").hasRole("BENEFICIARY")
                         .requestMatchers(HttpMethod.GET, "/projects/new").permitAll()
@@ -60,6 +61,15 @@ public class SecurityConfig {
                         .requestMatchers("/", "/home", "/index.html").permitAll()
                         .requestMatchers("/favicon.ico", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/api/users/signup", "/api/users/registrar", "/api/users/login", "/api/users/check-name", "/api/users/check-email").permitAll()
+
+
+                        // ✅ HTML 페이지는 누구나 접근 가능 (관리자 뷰 페이지)
+                        .requestMatchers("/admin").permitAll()
+                        // ✅ 관리자 전용 API는 ROLE_ADMIN 필요
+                        .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+
+                        .requestMatchers("/admin/project").permitAll()
+
 
                         .requestMatchers("/profile/{name}").permitAll()  // ✅ 프로필 뷰는 인증 없이 접근 가능
                         .requestMatchers("/profile/modify/{name}").permitAll() // ✅ 프로필 수정 뷰도 인증 없이 접근 가능
