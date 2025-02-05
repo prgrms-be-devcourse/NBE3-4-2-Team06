@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authorization.AuthorizationDecision;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -53,6 +52,9 @@ public class SecurityConfig {
                         // ✅ 프로젝트 생성 API는 수혜자(ROLE_BENEFICIARY)만 접근 가능하도록 설정
                         .requestMatchers(HttpMethod.POST, "/api/beneficiary/create/projects").hasRole("BENEFICIARY")
                         .requestMatchers(HttpMethod.GET, "/projects/new").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/api/projects/search").permitAll() // ✅ 검색 API를 인증 없이 허용
+                        .requestMatchers(HttpMethod.GET, "/projects/search").permitAll()  // ✅ 검색 페이지(View) 접근 허용
 
                         // ✅ 인증 없이 접근 가능한 정적 리소스 및 공용 API
                         .requestMatchers("/", "/home", "/index.html").permitAll()
