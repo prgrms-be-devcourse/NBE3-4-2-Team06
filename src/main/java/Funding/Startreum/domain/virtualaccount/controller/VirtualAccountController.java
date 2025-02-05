@@ -3,7 +3,9 @@ package Funding.Startreum.domain.virtualaccount.controller;
 
 import Funding.Startreum.common.util.ApiResponse;
 import Funding.Startreum.domain.virtualaccount.dto.VirtualAccountDtos;
+import Funding.Startreum.domain.virtualaccount.dto.request.AccountPaymentRequest;
 import Funding.Startreum.domain.virtualaccount.dto.request.AccountRequest;
+import Funding.Startreum.domain.virtualaccount.dto.response.AccountPaymentResponse;
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse;
 import Funding.Startreum.domain.virtualaccount.service.VirtualAccountService;
 import jakarta.validation.Valid;
@@ -11,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.parameters.P;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -22,7 +27,6 @@ import java.security.Principal;
 public class VirtualAccountController {
 
     private final VirtualAccountService service;
-
 
     /**
      * 특정 사용자의 계좌 조회 API (이름 기반)
@@ -68,10 +72,10 @@ public class VirtualAccountController {
     @PreAuthorize("hasRole('ADMIN') or @accountSecurity.isAccountOwner(principal, #accountId)")
     @PostMapping("/{accountId}")
     public ResponseEntity<?> chargeVirtualAccount(
-            @PathVariable(name = "accountId") @P("accountId") int accountId,
+            @PathVariable("accountId") @P("accountId") int accountId,
             @RequestBody @Valid AccountRequest request
     ) {
-        AccountResponse response = service.charge(accountId, request);
+        AccountPaymentResponse response = service.charge(accountId, request);
         return ResponseEntity.ok(ApiResponse.success("계좌 충전에 성공했습니다.", response));
     }
 
@@ -86,11 +90,15 @@ public class VirtualAccountController {
     }
 
     // 결제 처리: 결제 요청을 처리합니다.
-    @PostMapping("/{accountId}/charge")
-    public void processPayment(
-            @PathVariable int accountId
+    @PreAuthorize("hasRole('ADMIN') or @accountSecurity.isAccountOwner(principal, #accountId)")
+    @PostMapping("/{accountId}/payment")
+    public ResponseEntity<?> processPayment(
+            @PathVariable("accountId") @P("accountId") int accountId,
+            @RequestBody @Valid AccountPaymentRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
-        System.out.println("결제를 완료했습니다.");
+        AccountPaymentResponse response = service.payment(accountId, request,  userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success("결제에 성공했습니다.", response));
     }
 
     // 환불 처리: 특정 거래에 대한 환불을 진행합니다.

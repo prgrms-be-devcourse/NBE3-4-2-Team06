@@ -3,6 +3,7 @@ package Funding.Startreum.domain.virtualaccount.controller;
 import Funding.Startreum.common.util.JwtUtil;
 import Funding.Startreum.domain.users.CustomUserDetailsService;
 import Funding.Startreum.domain.virtualaccount.dto.request.AccountRequest;
+import Funding.Startreum.domain.virtualaccount.dto.response.AccountPaymentResponse;
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse;
 import Funding.Startreum.domain.virtualaccount.entity.VirtualAccount;
 import Funding.Startreum.domain.virtualaccount.exception.AccountNotFoundException;
@@ -117,10 +118,8 @@ class VirtualAccountControllerTest {
         // Given
         int accountId = 100;
         AccountResponse response = new AccountResponse(
-                0,
-                accountId,
-                BigDecimal.TEN,
-                BigDecimal.ONE,
+                100,
+                BigDecimal.ZERO,
                 LocalDateTime.now()
         );
 
@@ -151,10 +150,8 @@ class VirtualAccountControllerTest {
         // Given
         int accountId = 100;
         AccountResponse response = new AccountResponse(
-                0,
-                accountId,
-                BigDecimal.TEN,
-                BigDecimal.ONE,
+                100,
+                BigDecimal.ZERO,
                 LocalDateTime.now()
         );
 
@@ -212,9 +209,7 @@ class VirtualAccountControllerTest {
         int accountId = 100;
         AccountResponse response = new AccountResponse(
                 0,
-                accountId,
-                BigDecimal.TEN,
-                BigDecimal.ONE,
+                BigDecimal.ZERO,
                 LocalDateTime.now()
         );
 
@@ -241,12 +236,12 @@ class VirtualAccountControllerTest {
     void chargeAccountTest1() throws Exception {
         // Given
         int accountId = 100;
-        BigDecimal chargeAmount = BigDecimal.valueOf(1000);
+        BigDecimal amount = BigDecimal.valueOf(1000);
 
-        AccountRequest request = new AccountRequest(chargeAmount);
+        AccountRequest request = new AccountRequest(amount);
 
-        AccountResponse response = new AccountResponse(
-                0, accountId, chargeAmount, chargeAmount, LocalDateTime.now()
+        AccountPaymentResponse response = new AccountPaymentResponse(
+                0, accountId, amount, amount, amount, LocalDateTime.now()
         );
 
         given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
@@ -257,10 +252,10 @@ class VirtualAccountControllerTest {
                         post("/api/account/{accountId}", accountId)
                                 .header("Authorization", "Bearer " + adminToken)
                                 .content("""
-                                {
-                                    "chargeAmount": 1000
-                                }
-                                """.stripIndent())
+                                        {
+                                            "amount": 1000
+                                        }
+                                        """.stripIndent())
                                 .contentType(MediaType.APPLICATION_JSON)
 
                 )
@@ -270,7 +265,7 @@ class VirtualAccountControllerTest {
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value("계좌 충전에 성공했습니다."))
                 .andExpect(jsonPath("$.data.accountId").value(accountId))
-                .andExpect(jsonPath("$.data.balance").value(1000));
+                .andExpect(jsonPath("$.data.afterMoney").value(1000));
     }
 
     /**
@@ -282,12 +277,12 @@ class VirtualAccountControllerTest {
     void chargeAccountTest2() throws Exception {
         // Given
         int accountId = 100;
-        BigDecimal chargeAmount = BigDecimal.valueOf(1000);
+        BigDecimal amount = BigDecimal.valueOf(1000);
 
-        AccountRequest request = new AccountRequest(chargeAmount);
+        AccountRequest request = new AccountRequest(amount);
 
-        AccountResponse response = new AccountResponse(
-                0, accountId, chargeAmount, chargeAmount, LocalDateTime.now()
+        AccountPaymentResponse response = new AccountPaymentResponse(
+                0, accountId, amount, amount, amount, LocalDateTime.now()
         );
 
         given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
@@ -298,10 +293,10 @@ class VirtualAccountControllerTest {
                         post("/api/account/{accountId}", accountId)
                                 .header("Authorization", "Bearer " + ownerToken)
                                 .content("""
-                                {
-                                    "chargeAmount": 1000
-                                }
-                                """.stripIndent())
+                                        {
+                                            "amount": 1000
+                                        }
+                                        """.stripIndent())
                                 .contentType(MediaType.APPLICATION_JSON)
 
                 )
@@ -311,7 +306,7 @@ class VirtualAccountControllerTest {
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value("계좌 충전에 성공했습니다."))
                 .andExpect(jsonPath("$.data.accountId").value(accountId))
-                .andExpect(jsonPath("$.data.balance").value(1000));
+                .andExpect(jsonPath("$.data.afterMoney").value(1000));
     }
 
     /**
@@ -323,21 +318,22 @@ class VirtualAccountControllerTest {
     void chargeAccountTest3() throws Exception {
         // Given
         int accountId = 500;
-        BigDecimal chargeAmount = BigDecimal.valueOf(1000);
-        AccountRequest request = new AccountRequest(chargeAmount);
+        BigDecimal amount = BigDecimal.valueOf(1000);
+        AccountRequest request = new AccountRequest(amount);
 
         given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
-                .willThrow(new AccountNotFoundException(accountId));;
+                .willThrow(new AccountNotFoundException(accountId));
+        ;
 
         // When
         mockMvc.perform(
                         post("/api/account/{accountId}", accountId)
                                 .header("Authorization", "Bearer " + ownerToken)
                                 .content("""
-                                {
-                                    "chargeAmount": 1000
-                                }
-                                """.stripIndent())
+                                        {
+                                            "amount": 1000
+                                        }
+                                        """.stripIndent())
                                 .contentType(MediaType.APPLICATION_JSON)
 
                 )
@@ -358,10 +354,10 @@ class VirtualAccountControllerTest {
     void chargeAccountTest4() throws Exception {
         // Given
         int accountId = 100;
-        BigDecimal chargeAmount = BigDecimal.valueOf(1000);
-        AccountRequest request = new AccountRequest(chargeAmount);
-        AccountResponse response = new AccountResponse(
-                0, accountId, chargeAmount, chargeAmount, LocalDateTime.now()
+        BigDecimal amount = BigDecimal.valueOf(1000);
+        AccountRequest request = new AccountRequest(amount);
+        AccountPaymentResponse response = new AccountPaymentResponse(
+                0, accountId, amount, amount, amount, LocalDateTime.now()
         );
 
         given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
@@ -372,10 +368,10 @@ class VirtualAccountControllerTest {
                         post("/api/account/{accountId}", accountId)
                                 .header("Authorization", "Bearer " + notOwnerToken)
                                 .content("""
-                                {
-                                    "chargeAmount": 1000
-                                }
-                                """.stripIndent())
+                                        {
+                                            "amount": 1000
+                                        }
+                                        """.stripIndent())
                                 .contentType(MediaType.APPLICATION_JSON)
 
                 )
@@ -383,8 +379,6 @@ class VirtualAccountControllerTest {
                 // Then
                 .andExpect(status().isForbidden());
     }
-
-
 
 
 }

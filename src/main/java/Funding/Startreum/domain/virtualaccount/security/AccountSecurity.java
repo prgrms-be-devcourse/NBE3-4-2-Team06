@@ -12,17 +12,28 @@ public class AccountSecurity {
 
     private final VirtualAccountRepository repository;
 
+    /**
+     * 계좌 소유자의 username과 현재 로그인한 사용자의 username을 비교하여 권한을 확인합니다.
+     * <p>
+     * ⚠️ 현재 "이름(name)"을 기준으로 권한을 검증하지만,
+     * 동명이인 등의 문제가 발생할 수 있으므로 추후 수정이 필요합니다.
+     * <p>
+     * ⚠️ 계좌가 존재하지 않을 때는 Service Layer에서 처리하고 있습니다.
+     * 추후 논의가 필요합니다.
+     *
+     * @param userDetails 현재 로그인한 사용자 정보
+     * @param accountId   검증할 계좌 ID
+     * @return 계좌 소유자와 현재 로그인한 사용자가 일치하면 true
+     * @throws AccessDeniedException 권한이 없을 경우 발생*
+     */
     public boolean isAccountOwner(UserDetails userDetails, int accountId) {
-        System.out.println("isAccountOwner 호출, userDetails: " + userDetails + ", accountId: " + accountId);
-
-        // 계좌의 소유자(username)와 현재 로그인한 사용자의 username을 비교
         repository.findById(accountId)
                 .map(account -> {
                     boolean isOwner = account.getUser().getName().equals(userDetails.getUsername());
                     if (!isOwner) {
-                        throw new AccessDeniedException("해당 작업을 수행할 권한이 없습니다.");
+                        throw new AccessDeniedException("🔒 해당 계좌에 대한 접근 권한이 없습니다.");
                     }
-                    return true; // 소유자가 맞으면 true
+                    return true;
                 });
 
         return true;
