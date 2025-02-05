@@ -6,6 +6,7 @@ import Funding.Startreum.domain.project.dto.ProjectCreateResponseDto;
 
 import Funding.Startreum.domain.project.dto.ProjectUpdateRequestDto;
 import Funding.Startreum.domain.project.dto.ProjectUpdateResponseDto;
+import Funding.Startreum.domain.project.dto.ProjectApprovalResponseDto;
 import Funding.Startreum.domain.project.service.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -56,5 +57,13 @@ public class ProjectController {
     public ResponseEntity<?> deleteProject(@PathVariable Integer projectId, @RequestHeader("Authorization") String token) {
         projectService.deleteProject(projectId, token);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/requestApprove/{projectId}")
+    @PreAuthorize("hasRole('BENEFICIARY')")
+    public ResponseEntity<ProjectApprovalResponseDto> requestApprove(@PathVariable("projectId") Integer projectId, @RequestHeader("Authorization") String token) {
+        ProjectApprovalResponseDto responseDto = projectService.requestApprove(projectId, token);
+
+        return ResponseEntity.ok(responseDto);
     }
 }

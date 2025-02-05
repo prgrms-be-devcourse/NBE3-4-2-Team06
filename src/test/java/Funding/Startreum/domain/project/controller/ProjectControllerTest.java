@@ -1,10 +1,7 @@
 package Funding.Startreum.domain.project.controller;
 
 import Funding.Startreum.common.util.JwtUtil;
-import Funding.Startreum.domain.project.dto.ProjectCreateRequestDto;
-import Funding.Startreum.domain.project.dto.ProjectCreateResponseDto;
-import Funding.Startreum.domain.project.dto.ProjectUpdateRequestDto;
-import Funding.Startreum.domain.project.dto.ProjectUpdateResponseDto;
+import Funding.Startreum.domain.project.dto.*;
 import Funding.Startreum.domain.project.entity.Project;
 import Funding.Startreum.domain.project.repository.ProjectRepository;
 import Funding.Startreum.domain.project.service.ProjectService;
@@ -27,7 +24,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -67,6 +64,7 @@ public class ProjectControllerTest {
         user.setRole(User.Role.BENEFICIARY);
         user.setCreatedAt(LocalDateTime.now());  // createdAt 설정
         user.setUpdatedAt(LocalDateTime.now());  // updatedAt 설정
+        user.setName("testUser");
         userRepository.save(user);
 
         // ✅ 2. JWT 토큰 생성
@@ -82,6 +80,7 @@ public class ProjectControllerTest {
         project.setEndDate(LocalDateTime.of(2025, 3, 1, 0, 0));
         project.setCreator(user);
         projectRepository.save(project);
+        System.out.println(project.getCreator().getUserId());
 
         projectId = project.getProjectId();
     }
@@ -178,5 +177,37 @@ public class ProjectControllerTest {
 
         // ✅ 6. 응답 검증: HTTP 204 상태 코드 및 응답 본문 없음
         result.andExpect(status().isNoContent());  // 204 상태 코드
+    }
+
+    @Test
+    @DisplayName("프로젝트 승인 요청 성공 테스트")
+    void testRequestApprovalSuccess() throws Exception {
+        // Mocking ProjectService의 응답
+        ProjectApprovalResponseDto mockResponse = new ProjectApprovalResponseDto(
+                200,
+                "AWAITING_APPROVAL",
+                "승인 요청에 성공하였습니다.",
+                new ProjectApprovalResponseDto.Data(
+                        1,  // 예시 projectId
+                        LocalDateTime.now()
+                )
+        );
+
+        // ProjectService의 requestApprove 메서드가 호출될 때 mockResponse 반환
+        BDDMockito.given(projectService.requestApprove(anyInt(), anyString()))
+                .willReturn(mockResponse);
+
+        // MockMvc를 사용하여 POST 요청 수행
+        ResultActions result = mockMvc.perform(post("/api/beneficiary/requestApprove/" + 1)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON));
+
+        // 응답 검증
+        result.andExpect(status().isOk())
+                .andExpect(jsonPath("$.statusCode").value(200))
+                .andExpect(jsonPath("$.status").value("AWAITING_APPROVAL"))
+                .andExpect(jsonPath("$.message").value("승인 요청에 성공하였습니다."))
+                .andExpect(jsonPath("$.data.projectId").value(1))
+                .andExpect(jsonPath("$.data.requestedAt").exists());
     }
 }
