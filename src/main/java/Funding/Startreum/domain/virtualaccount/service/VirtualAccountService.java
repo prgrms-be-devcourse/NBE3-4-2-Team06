@@ -6,11 +6,9 @@ import Funding.Startreum.domain.users.UserRepository;
 import Funding.Startreum.domain.virtualaccount.dto.request.AccountRequest;
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse;
 import Funding.Startreum.domain.virtualaccount.entity.VirtualAccount;
+import Funding.Startreum.domain.virtualaccount.exception.AccountNotFoundException;
 import Funding.Startreum.domain.virtualaccount.repository.VirtualAccountRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,14 +26,15 @@ public class VirtualAccountService {
     // 계좌 충전
     @Transactional
     public AccountResponse charge(int accountId, AccountRequest request) {
+
         VirtualAccount account = repository.findById(accountId)
-                .orElseThrow(() -> new EntityNotFoundException("계좌를 찾을 수 없습니다 : " + accountId));
+                .orElseThrow(() -> new AccountNotFoundException(accountId));
 
         // 잔액 업데이트
         account.setBalance(account.getBalance().add(request.chargeAmount()));
         repository.save(account);
 
-        // 거래 내역
+        // 거래 내역 생성
         Transaction transaction = new Transaction();
         transaction.setFunding(null); // 충전은 펀딩과 연관 없음
         transaction.setAdmin(userRepository.findByName("Admin").orElse(null));
@@ -48,6 +47,24 @@ public class VirtualAccountService {
         transactionRepository.save(transaction);
 
         return mapToDto(account, transaction, request.chargeAmount());
+    }
+
+    @Transactional(readOnly = true)
+    public AccountResponse getAccountInfo(int accountId) {
+        VirtualAccount account = repository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException(accountId));
+
+        return mapToDto(account);
+    }
+
+    private AccountResponse mapToDto(VirtualAccount account) {
+        return new AccountResponse(
+                0,
+                account.getAccountId(),
+                BigDecimal.ZERO,
+                account.getBalance(),
+                account.getUpdatedAt()
+        );
     }
 
     private AccountResponse mapToDto(VirtualAccount account, Transaction transaction, BigDecimal chargeAmount) {
