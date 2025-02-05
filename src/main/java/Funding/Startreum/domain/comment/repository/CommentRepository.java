@@ -1,7 +1,7 @@
 package Funding.Startreum.domain.comment.repository;
 
 import Funding.Startreum.domain.comment.entity.Comment;
-import Funding.Startreum.domain.project.Project;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

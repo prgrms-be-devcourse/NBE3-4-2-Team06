@@ -1,6 +1,7 @@
 package Funding.Startreum.domain.project;
 
-import Funding.Startreum.domain.project.Project.Status;
+
+import Funding.Startreum.domain.project.entity.Project;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,7 +24,7 @@ public interface ProjectSearchRepository extends JpaRepository<Project, Integer>
      */
     @Query("SELECT p FROM Project p WHERE (p.title LIKE %:keyword% OR p.description LIKE %:keyword%) " +
             "AND p.status = :status AND p.isApproved = 'APPROVE'")
-    Page<Project> searchByKeywordAndStatus(@Param("keyword") String keyword, @Param("status") Status status, Pageable pageable);
+    Page<Project> searchByKeywordAndStatus(@Param("keyword") String keyword, @Param("status") Project.Status status, Pageable pageable);
 
     /**
      * 제목 또는 설명에 특정 키워드가 포함된 승인된 프로젝트 검색 (상태 필터링 없음).
