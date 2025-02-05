@@ -32,10 +32,10 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository) {
-        return new CustomUserDetailsService(userRepository);
-    }
+//    @Bean
+//    public UserDetailsService userDetailsService(UserRepository userRepository) {
+//        return new CustomUserDetailsService(userRepository);
+//    }
 
     // SecurityFilterChain Bean 등록
     @Bean
@@ -46,41 +46,41 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ✅ 세션 비활성화 (JWT 사용)
                 .authorizeHttpRequests(authorize -> authorize
 
-                                .requestMatchers("/", "/home", "/index.html").permitAll()
+                                //.requestMatchers("/", "/home", "/index.html").permitAll()
 
                                 // ✅ 로그아웃 요청은 인증 없이 가능
-                                .requestMatchers("/api/users/logout").permitAll()
+                                //.requestMatchers("/api/users/logout").permitAll()
 
                                 // ✅ 정적 리소스 허용 (CSS, JS, Images 등)
-                                .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                                //.requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
 
                                 // ✅ 검색 페이지(View) 접근 허용
-                                .requestMatchers("/projects/search").permitAll()
+                                //.requestMatchers("/projects/search").permitAll()
 
                                 // ✅ 검색 API 접근 허용
-                                .requestMatchers("/api/projects/search").permitAll()
+                                //.requestMatchers("/api/projects/search").permitAll()
 
                                 // ✅ 회원가입, 회원생성 ,로그인, 중복 확인 API 허용
-                                .requestMatchers("/api/users/signup", "/api/users/registrar", "/api/users/login", "/api/users/check-name", "/api/users/check-email").permitAll()
+                                //.requestMatchers("/api/users/signup", "/api/users/registrar", "/api/users/login", "/api/users/check-name", "/api/users/check-email").permitAll()
 
                                 // ✅ 프로필 페이지 (View)는 누구나 접근 가능
-                                .requestMatchers("/profile/{name}").permitAll()
+                                //.requestMatchers("/profile/{name}").permitAll()
 
                                 // ✅ 프로필 수정 페이지 접근 허용 (로그인 없이 가능)
-                                .requestMatchers("/profile/modify/{name}").permitAll()
+                                //.requestMatchers("/profile/modify/{name}").permitAll()
 
                                 // ✅ 프로필 API는 인증된 사용자만 접근 가능
-                                .requestMatchers("/api/users/profile/{name}").hasAnyRole("ADMIN", "BENEFICIARY", "SPONSOR")
+                                //.requestMatchers("/api/users/profile/{name}").hasAnyRole("ADMIN", "BENEFICIARY", "SPONSOR")
 
                                 // ✅ 이메일 수정 API (로그인 필요)
-                                .requestMatchers("/api/users/profile/modify/{name}").authenticated()
+                                //.requestMatchers("/api/users/profile/modify/{name}").authenticated()
 
 
                                 // ✅ 그 외 모든 요청은 인증 필요
-                                .anyRequest().authenticated()
+                                //.anyRequest().authenticated()
 
-                        // ✅ 모든 요청 허용 (테스트용)
-                        // .anyRequest().permitAll()
+                                // ✅ 모든 요청 허용 (테스트용)
+                                .anyRequest().permitAll()
 
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
