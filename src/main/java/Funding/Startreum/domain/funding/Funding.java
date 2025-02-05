@@ -1,6 +1,6 @@
 package Funding.Startreum.domain.funding;
 
-import Funding.Startreum.domain.project.Project;
+import Funding.Startreum.domain.project.entity.Project;
 import Funding.Startreum.domain.reward.Reward;
 import Funding.Startreum.domain.users.User;
 import jakarta.persistence.*;
