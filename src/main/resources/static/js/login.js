@@ -4,6 +4,8 @@ document.getElementById('loginForm').onsubmit = async (event) => {
     const name = document.getElementById('name').value;
     const password = document.getElementById('password').value;
 
+    console.log("입력된 값:", { name, password }); // 디버깅용 로그 추가
+
     try {
         const response = await fetch('/api/users/login', {
             method: 'POST',

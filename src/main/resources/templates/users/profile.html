@@ -8,12 +8,13 @@
 </head>
 <body>
 
-<!-- ✅ 헤더 중복 방지: body 내부에서 한 번만 불러오기 -->
+<!-- ✅ 헤더 -->
 <div th:replace="~{fragments/header :: header}"></div>
 
 <div class="profile-container">
     <div class="title-container">
         <h2>마이페이지</h2>
+        <button id="manageAccountBtn" class="account-btn">계좌 관리</button>
         <button id="editProfileBtn" class="edit-btn">수정하기</button>
     </div>
 
@@ -24,13 +25,14 @@
     <p><strong>최근 수정일:</strong> <span id="userUpdatedAt" th:text="${updatedAt}"></span></p>
 </div>
 
-<!-- 사용자 정보 가져오기 -->
+<!-- ✅ 사용자 정보 가져오기 -->
 <script>
     document.addEventListener("DOMContentLoaded", async function () {
       const token = localStorage.getItem("accessToken");
       const username = window.location.pathname.split("/").pop(); // URL에서 username 추출
 
       if (!token) {
+          console.warn("❌ JWT 토큰 없음! 로그인 페이지로 이동합니다.");
           alert("로그인이 필요합니다. 로그인 페이지로 이동합니다.");
           window.location.href = "/api/users/login";
           return;
@@ -38,45 +40,20 @@
 
       console.log("🔹 저장된 JWT 토큰:", token);
 
-      // 🔹 JWT에서 사용자 정보 추출 (모든 Claims 확인)
-      let loggedInUser = null;
-      let jwtRole = null;
-
       try {
-          const payload = JSON.parse(atob(token.split(".")[1]));
-          console.log("📌 JWT Payload 전체 데이터:", payload);
-
-          loggedInUser = payload.sub;  // JWT의 subject (username)
-          jwtRole = payload.role;  // role 정보
-
-          console.log("📌 JWT에서 추출된 사용자 ID:", loggedInUser);
-          console.log("📌 JWT에서 추출된 역할:", jwtRole);
-      } catch (error) {
-          console.error("❌ JWT 디코딩 오류:", error);
-          alert("잘못된 로그인 정보입니다. 다시 로그인해주세요.");
-          localStorage.removeItem("accessToken");
-          window.location.href = "/api/users/login";
-          return;
-      }
-
-      try {
-          // ✅ 서버에 프로필 요청 (클라이언트 → 서버)
           console.log(`📌 서버에 요청 중: GET /api/users/profile/${username}`);
           const response = await fetch(`/api/users/profile/${username}`, {
               method: "GET",
               headers: {
-                  "Authorization": `Bearer ${token}`,
+                  "Authorization": `Bearer ${token}`, // ✅ JWT 토큰 포함
                   "Content-Type": "application/json"
               }
           });
 
-          console.log("📌 요청 헤더:", {
-              Authorization: `Bearer ${token}`,
+          console.log("📌 요청 헤더 확인:", {
+              "Authorization": `Bearer ${token}`,
               "Content-Type": "application/json"
           });
-
-          // ✅ 서버 응답 상태 코드 확인
-          console.log("📌 서버 응답 상태 코드:", response.status);
 
           if (!response.ok) {
               console.error(`❌ 서버 응답 오류: ${response.status} - ${response.statusText}`);
@@ -85,7 +62,6 @@
               throw new Error(`서버 오류: ${response.status}`);
           }
 
-          // ✅ 서버 응답 JSON 데이터 확인
           const data = await response.json();
           console.log("📌 서버 응답 데이터 (원본):", data);
 
@@ -93,37 +69,13 @@
               throw new Error("사용자 데이터가 존재하지 않습니다.");
           }
 
-          // ✅ 서버에서 가져온 데이터 출력
-          console.log("📌 서버에서 가져온 사용자 데이터:");
-          console.log("   - 사용자명:", data.data.name);
-          console.log("   - 이메일:", data.data.email);
-          console.log("   - 역할:", data.data.role);
-          console.log("   - 가입일:", data.data.createdAt);
-          console.log("   - 최근 수정일:", data.data.updatedAt);
-
-          // 날짜 변환 함수
-          const formatDate = (isoString) => {
-              if (!isoString) return "N/A";
-              return new Date(isoString).toISOString().split("T")[0];
-          };
-
-          // 역할 변환 (영어 → 한글)
-          const roleTranslation = {
-              "ADMIN": "관리자",
-              "_BENEFICIARY": "수혜자",
-              "SPONSOR": "후원자"
-          };
-
-          const translatedRole = roleTranslation[data.data.role] || "알 수 없는 역할";
-
-          // ✅ 서버에서 받아온 정보로 UI 업데이트
+          // ✅ 프로필 데이터 반영
           document.getElementById("userName").textContent = data.data.name || "N/A";
           document.getElementById("userEmail").textContent = data.data.email || "N/A";
-          document.getElementById("userRole").textContent = translatedRole;
-          document.getElementById("userCreatedAt").textContent = formatDate(data.data.createdAt);
-          document.getElementById("userUpdatedAt").textContent = formatDate(data.data.updatedAt);
+          document.getElementById("userRole").textContent = data.data.role || "N/A";
+          document.getElementById("userCreatedAt").textContent = new Date(data.data.createdAt).toISOString().split("T")[0];
+          document.getElementById("userUpdatedAt").textContent = new Date(data.data.updatedAt).toISOString().split("T")[0];
 
-          console.log("✅ 최종 변환된 역할 (한글):", translatedRole);
           console.log("✅ 프로필 데이터 반영 완료.");
       } catch (error) {
           console.error("❌ 프로필 불러오기 오류:", error);
@@ -132,13 +84,32 @@
   });
 </script>
 
+<!-- ✅ 버튼 이벤트 리스너 -->
 <script>
-    document.getElementById("editProfileBtn").addEventListener("click", function () {
-        const username = window.location.pathname.split("/").pop(); // URL에서 username 가져오기
-        const popup = window.open(`/profile/modify/${username}`, "EditProfilePopup", "width=500,height=400,scrollbars=no");
+    document.addEventListener("DOMContentLoaded", function () {
+        const username = window.location.pathname.split("/").pop(); // URL에서 username 추출
 
-        if (!popup) {
-            alert("팝업이 차단되었습니다. 팝업 차단을 해제해주세요.");
+        // ✅ 수정 버튼
+        const editProfileBtn = document.getElementById("editProfileBtn");
+        if (editProfileBtn) {
+            editProfileBtn.addEventListener("click", function () {
+                const popup = window.open(`/profile/modify/${username}`, "EditProfilePopup", "width=500,height=400,scrollbars=no");
+                if (!popup) {
+                    alert("팝업이 차단되었습니다. 팝업 차단을 해제해주세요.");
+                }
+            });
+        } else {
+            console.error("❌ 수정 버튼을 찾을 수 없습니다.");
+        }
+
+        // ✅ 계좌 관리 버튼
+        const manageAccountBtn = document.getElementById("manageAccountBtn");
+        if (manageAccountBtn) {
+            manageAccountBtn.addEventListener("click", function () {
+                window.location.href = `/profile/account/${username}`;
+            });
+        } else {
+            console.error("❌ 계좌 관리 버튼을 찾을 수 없습니다.");
         }
     });
 </script>
