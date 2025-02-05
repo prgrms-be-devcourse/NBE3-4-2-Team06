@@ -45,6 +45,7 @@ public class ProjectService {
         project.setStatus(Project.Status.ONGOING);
         project.setIsApproved(Project.ApprovalStatus.AWAITING_APPROVAL);
         project.setCreatedAt(LocalDateTime.now());
+        project.setIsDeleted(false);
 
         projectRepository.save(project);
 
