@@ -28,10 +28,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -80,7 +82,6 @@ public class ProjectControllerTest {
         project.setEndDate(LocalDateTime.of(2025, 3, 1, 0, 0));
         project.setCreator(user);
         projectRepository.save(project);
-        System.out.println(project.getCreator().getUserId());
 
         projectId = project.getProjectId();
     }
@@ -153,7 +154,6 @@ public class ProjectControllerTest {
                           "endDate": "2025-03-10T00:00:00"
                         }
                         """));
-
         // ✅ 7. 응답 검증
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.statusCode").value(200))
@@ -165,5 +165,18 @@ public class ProjectControllerTest {
                 .andExpect(jsonPath("$.data.startDate").value("2025-02-10T00:00:00"))
                 .andExpect(jsonPath("$.data.endDate").value("2025-03-10T00:00:00"));
     }
+    @Test
+    @DisplayName("프로젝트 삭제 성공 테스트")
+    void testDeleteProject() throws Exception {
+        // ✅ 4. projectService.deleteProject 모의 응답 설정
+        BDDMockito.doNothing().when(projectService).deleteProject(any(Integer.class), any(String.class));
 
+        // ✅ 5. DELETE 요청 수행
+        ResultActions result = mockMvc.perform(delete("/api/beneficiary/delete/" + projectId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON));
+
+        // ✅ 6. 응답 검증: HTTP 204 상태 코드 및 응답 본문 없음
+        result.andExpect(status().isNoContent());  // 204 상태 코드
+    }
 }

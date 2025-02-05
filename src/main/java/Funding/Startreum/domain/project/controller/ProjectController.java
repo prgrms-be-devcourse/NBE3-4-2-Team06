@@ -51,4 +51,10 @@ public class ProjectController {
                 "data", updatedProject
         ));
     }
+
+    @DeleteMapping("/delete/{projectId}")
+    public ResponseEntity<?> deleteProject(@PathVariable Integer projectId, @RequestHeader("Authorization") String token) {
+        projectService.deleteProject(projectId, token);
+        return ResponseEntity.noContent().build();
+    }
 }

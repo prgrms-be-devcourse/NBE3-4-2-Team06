@@ -33,7 +33,7 @@ public class ProjectService {
 
         //사용자 검증
         User user = userRepository.findByEmail(userId).orElseThrow(() ->
-        new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용자를 찾을 수 없습니다"));    //사용자를 찾을 수 없을 시 401 에러
+                new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용자를 찾을 수 없습니다"));    //사용자를 찾을 수 없을 시 401 에러
 
         //프로젝트 생성
         Project project = new Project();
@@ -53,6 +53,7 @@ public class ProjectService {
 
         return new ProjectCreateResponseDto(project.getProjectId(), project.getTitle(), project.getCreatedAt());
     }
+
     @Transactional
     public ProjectUpdateResponseDto modifyProject(Integer projectId, ProjectUpdateRequestDto projectUpdateRequestDto, String token) {
         String email = jwtUtil.getEmailFromToken(token.replace("Bearer ", ""));
@@ -91,5 +92,18 @@ public class ProjectService {
                 project.getEndDate(),
                 project.getUpdatedAt() // 수정된 시간
         );
+    }
+    public void deleteProject(Integer projectId, String token) {
+        // "Bearer " 문자열 제거
+        String email = jwtUtil.getEmailFromToken(token.replace("Bearer ", ""));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."));
+        Project findProject = projectRepository.findById(projectId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "해당 프로젝트를 찾을 수 없습니다."));
+        if (!findProject.getCreator().getUserId().equals(user.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "해당 작업을 수행할 권한이 없습니다."); //로그인한 유저와 프로젝트 유저 다를 시 403 에러 발생
+        }
+
+        // 프로젝트와 연관된 엔티티 삭제 (Cascade 설정이 되어 있으면 자동 삭제됨)
+        projectRepository.delete(findProject);
     }
 }

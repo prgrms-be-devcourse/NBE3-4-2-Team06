@@ -25,7 +25,6 @@ import java.util.List;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-
     // PasswordEncoder Bean 등록
     @Bean
     public PasswordEncoder passwordEncoder() {
