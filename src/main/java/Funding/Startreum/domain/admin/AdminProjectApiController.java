@@ -1,10 +1,14 @@
 package Funding.Startreum.domain.admin;
 
-import Funding.Startreum.domain.project.Project;
-import Funding.Startreum.domain.project.ProjectRepository;
+
 import Funding.Startreum.domain.project.ProjectSearchDto;
+import Funding.Startreum.domain.project.entity.Project;
+import Funding.Startreum.domain.project.repository.ProjectRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.stream.Collectors;
