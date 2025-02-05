@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -60,22 +61,23 @@ public class UserController {
     }
 
     // 로그아웃
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody Map<String, String> request) {
-        String username = request.get("username");
+    @PostMapping("/api/users/logout")
+    public ResponseEntity<Map<String, String>> logout() {
+        System.out.println("🔹 로그아웃 API 호출됨");
 
-        if (username == null || username.isBlank()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "잘못된 요청: 사용자 이름이 필요합니다."));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            System.out.println("❌ 로그아웃 실패: 인증되지 않은 사용자");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "error", "message", "로그인 상태가 아닙니다."));
         }
 
-        System.out.println("🔹 로그아웃 요청됨: " + username);
+        String username = authentication.getName();
+        System.out.println("✅ 로그아웃 성공 - 사용자: " + username);
 
-
-
-        return ResponseEntity.ok(Map.of(
-                "status", "success",
-                "message", "로그아웃 성공. Refresh Token 삭제됨."
-        ));
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok(Map.of("status", "success", "message", "로그아웃 성공"));
     }
 
     // ✅ 로그인 API (JWT 발급)
@@ -163,16 +165,16 @@ public class UserController {
 
     // 🔹 사용자 프로필 정보 조회 API (본인 또는 관리자만 조회 가능)
     @GetMapping("/profile/{name}")
+    @PreAuthorize("#name == authentication.name or hasRole('ADMIN')")
     public ResponseEntity<?> getUserProfile(@PathVariable String name) {
         System.out.println("📌 API 요청됨: /api/users/profile/" + name);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || authentication.getPrincipal().equals("anonymousUser")) {
-            System.out.println("❌ 인증되지 않은 사용자 요청: " + name);
-            return ResponseEntity.status(403).body(Map.of(
-                    "status", "error",
-                    "message", "해당 사용자 정보를 조회할 권한이 없습니다."
-            ));
+        if (authentication == null) {
+            System.out.println("❌ SecurityContext에서 인증 정보가 없음");
+        } else {
+            System.out.println("✅ 인증된 사용자: " + authentication.getName());
+            System.out.println("✅ 사용자 역할: " + authentication.getAuthorities());
         }
 
         String loggedInUsername = authentication.getName();
@@ -203,15 +205,18 @@ public class UserController {
     }
 
     // ✅ 이메일 수정 API (PUT)
+    @PreAuthorize("#name == authentication.name or hasRole('ROLE_ADMIN')")
     @PutMapping("profile/modify/{name}")
-    public ResponseEntity<Map<String, String>> updateEmail(
-            @PathVariable String name,
-            @Valid @RequestBody EmailUpdateRequest request
-    ) {
+    public ResponseEntity<?> updateEmail(@PathVariable String name, @Valid @RequestBody EmailUpdateRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.getName().equals(name)) {
+            System.out.println("❌ 인증 실패 또는 다른 유저가 접근을 시도함: " + authentication.getName());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "권한이 없습니다."));
+        }
+
         userService.updateUserEmail(name, request.newEmail());
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "이메일이 성공적으로 변경되었습니다.");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of("message", "이메일이 성공적으로 변경되었습니다."));
     }
 
 }
