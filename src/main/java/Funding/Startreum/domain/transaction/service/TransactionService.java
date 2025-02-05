@@ -10,4 +10,7 @@ public class TransactionService {
 
     private final TransactionRepository repository;
 
+    public void transfer(String email, Integer projectId) {
+
+    }
 }

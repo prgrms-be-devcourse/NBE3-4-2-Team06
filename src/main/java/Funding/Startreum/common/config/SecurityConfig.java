@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -48,6 +49,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) //  CSRF 비활성화 (REST API 방식)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ✅ 세션 비활성화 (JWT 사용)
                 .authorizeHttpRequests(authorize -> authorize
+
+                        // ✅ 프로젝트 생성 API는 수혜자(ROLE_BENEFICIARY)만 접근 가능하도록 설정
+                        .requestMatchers(HttpMethod.POST, "/api/beneficiary/create/projects").hasRole("BENEFICIARY")
+                        .requestMatchers(HttpMethod.GET, "/projects/new").permitAll()
 
                         // ✅ 인증 없이 접근 가능한 정적 리소스 및 공용 API
                         .requestMatchers("/", "/home", "/index.html").permitAll()
