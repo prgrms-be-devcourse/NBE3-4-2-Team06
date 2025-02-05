@@ -75,7 +75,7 @@ public class VirtualAccountController {
         return ResponseEntity.ok(ApiResponse.success("계좌 충전에 성공했습니다.", response));
     }
 
-    // 거래 내역 조회: 특정 계좌의 거래 내역을 조회합니다. 해당 계좌의 본인과 관리자만 가능합니다.
+    // 계좌 내역 조회: 특정 계좌의 내역을 조회합니다. 해당 계좌의 본인과 관리자만 가능합니다.
     @PreAuthorize("hasRole('ADMIN') or @accountSecurity.isAccountOwner(principal, #accountId)")
     @GetMapping("/{accountId}")
     public ResponseEntity<?> getAccountTransactions(

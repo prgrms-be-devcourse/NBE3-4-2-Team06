@@ -16,8 +16,15 @@ public class AccountSecurity {
         System.out.println("isAccountOwner 호출, userDetails: " + userDetails + ", accountId: " + accountId);
 
         // 계좌의 소유자(username)와 현재 로그인한 사용자의 username을 비교
-        return repository.findById(accountId)
-                .map(account -> account.getUser().getName().equals(userDetails.getUsername()))
-                .orElseThrow(() -> new AccessDeniedException("해당 작업을 수행할 권한이 없습니다."));
+        repository.findById(accountId)
+                .map(account -> {
+                    boolean isOwner = account.getUser().getName().equals(userDetails.getUsername());
+                    if (!isOwner) {
+                        throw new AccessDeniedException("해당 작업을 수행할 권한이 없습니다.");
+                    }
+                    return true; // 소유자가 맞으면 true
+                });
+
+        return true;
     }
 }
