@@ -1,23 +1,17 @@
 package Funding.Startreum.domain.virtualaccount.controller;
 
 
-import Funding.Startreum.domain.virtualaccount.dto.VirtualAccountDtos;
-
 import Funding.Startreum.common.util.ApiResponse;
+import Funding.Startreum.domain.virtualaccount.dto.VirtualAccountDtos;
 import Funding.Startreum.domain.virtualaccount.dto.request.AccountRequest;
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse;
-
 import Funding.Startreum.domain.virtualaccount.service.VirtualAccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -69,26 +63,6 @@ public class VirtualAccountController {
         }
     }
 
-
-
-
-    /**
-     * 잔액 충전 API
-     */
-    @PostMapping("/{accountId}")
-    public ResponseEntity<String> chargeVirtualAccount(@PathVariable int accountId) {
-        System.out.println("잔액 충전을 완료했습니다.");
-        return ResponseEntity.ok("잔액 충전 완료");
-    }
-
-    /**
-     * 거래 내역 조회 API
-     */
-    @GetMapping("/{accountId}")
-    public ResponseEntity<String> getPayment(@PathVariable int accountId) {
-        System.out.println("거래 내역을 조회했습니다.");
-        return ResponseEntity.ok("거래 내역 조회 완료");
-    }
 
     // 잔액 충전: 계좌에 금액을 충전합니다. 해당 계좌의 본인과 관리자만 가능합니다.
     @PreAuthorize("hasRole('ADMIN') or @accountSecurity.isAccountOwner(principal, #accountId)")
