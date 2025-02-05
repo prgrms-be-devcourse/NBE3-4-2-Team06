@@ -1,5 +1,7 @@
 window.onload = function () {
     const authButtons = document.querySelector("#auth-buttons");
+    const beneficiaryActions = document.querySelector("#beneficiary-actions"); // "생성하기" 버튼이 들어갈 영역
+
 
     if (!authButtons) {
         console.error(" auth-buttons 요소를 찾을 수 없습니다.");
@@ -27,12 +29,23 @@ window.onload = function () {
 
             const translatedRole = roleTranslation[userRole] || "알 수 없는 역할";
 
-            //  로그인 상태일 때: 사용자 이름 & 로그아웃 버튼 표시
-       authButtons.innerHTML = `
-           <span class="fw-bold text-primary">${userName} (${translatedRole})님</span>
-           <a href="/profile/${userName}" class="btn btn-outline-primary">내 정보</a>
-           <button id="logout-button" class="btn btn-danger">로그아웃</button>
-       `;
+          //  로그인 상태일 때: 사용자 이름 & 로그아웃 버튼 표시
+                    authButtons.innerHTML = `
+                        <span class="fw-bold text-primary">${userName} (${translatedRole})님</span>
+                        <a href="/profile/${userName}" class="btn btn-outline-primary">내 정보</a>
+                        ${userRole === "ROLE_ADMIN" ? `<a href="/admin" class="btn btn-warning">관리자</a>` : ""}
+                        <button id="logout-button" class="btn btn-danger">로그아웃</button>
+                    `;
+
+        // ✅ 수혜자(ROLE_BENEFICIARY)일 경우 "생성하기" 버튼 추가
+            if (userRole === "ROLE_BENEFICIARY" && beneficiaryActions) {
+                beneficiaryActions.innerHTML = `
+                    <button class="btn btn-success btn-lg" onclick="location.href='/projects/new'">
+                        생성하기
+                    </button>
+                `;
+            }
+
 
        // ✅ 로그아웃 버튼에 이벤트 리스너 추가
        document.getElementById("logout-button").addEventListener("click", logout);
