@@ -2,6 +2,7 @@ package Funding.Startreum.domain.virtualaccount.controller;
 
 import Funding.Startreum.common.util.JwtUtil;
 import Funding.Startreum.domain.users.CustomUserDetailsService;
+import Funding.Startreum.domain.users.UserService;
 import Funding.Startreum.domain.virtualaccount.dto.request.AccountRequest;
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountPaymentResponse;
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse;
@@ -25,6 +26,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static Funding.Startreum.domain.users.User.Role.ADMIN;
+import static Funding.Startreum.domain.users.User.Role.SPONSOR;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -52,6 +55,9 @@ class VirtualAccountControllerTest {
     @MockitoBean
     private CustomUserDetailsService userDetailsService;
 
+    @MockitoBean
+    private UserService userService;
+
     private String adminToken;            // 관리자
     private String ownerToken;     // 실제 계좌의 소유자
     private String notOwnerToken;  // 다른 계좌 소유자
@@ -61,16 +67,31 @@ class VirtualAccountControllerTest {
      */
     @BeforeEach
     void setUp() {
-        createAccount(100, "owner");
-        // createAccount(200, "owner");
-
-        createDetails("admin", "ADMIN");
-        createDetails("owner", "SPONSOR");
-        createDetails("other", "SPONSOR");
+        createVirtualAccount(100, "owner");
+        createVirtualDetails("admin", "ADMIN");
+        createVirtualDetails("owner", "SPONSOR");
+        createVirtualDetails("other", "SPONSOR");
+        extracted(1, "admin", ADMIN);
+        extracted(2, "owner", SPONSOR);
+        extracted(3, "other", SPONSOR);
 
         this.adminToken = jwtUtil.generateAccessToken("admin", "admin@test.com", "ADMIN");
         this.ownerToken = jwtUtil.generateAccessToken("owner", "owner@test.com", "SPONSOR");
         this.notOwnerToken = jwtUtil.generateAccessToken("other", "other@test.com", "SPONSOR");
+    }
+
+    /**
+     * 가상 유저를 설정하는 메서드입니다.
+     *
+     * @param userId 유저 ID
+     * @param owner  유저 이름
+     */
+    private void extracted(int userId, String owner, Funding.Startreum.domain.users.User.Role role) {
+        Funding.Startreum.domain.users.User ownerUser = new Funding.Startreum.domain.users.User();
+        ownerUser.setUserId(userId);
+        ownerUser.setName(owner);
+        ownerUser.setRole(role);
+        given(userService.getUserByName(owner)).willReturn(ownerUser);
     }
 
     /**
@@ -79,7 +100,7 @@ class VirtualAccountControllerTest {
      * @param accountId    계좌 ID
      * @param accountOwner 계좌 소유자
      */
-    private void createAccount(int accountId, String accountOwner) {
+    private void createVirtualAccount(int accountId, String accountOwner) {
         Funding.Startreum.domain.users.User user = new Funding.Startreum.domain.users.User();
         user.setName(accountOwner);
         VirtualAccount mockAccount = new VirtualAccount();
@@ -91,12 +112,12 @@ class VirtualAccountControllerTest {
     }
 
     /**
-     * 사용자 정보를 설정하는 메서드입니다.
+     * 가상 사용자 정보를 설정하는 메서드입니다.
      *
      * @param username 사용자 이름
      * @param role     사용자 역할 (ADMIN, SPONSOR 등)
      */
-    private void createDetails(String username, String role) {
+    private void createVirtualDetails(String username, String role) {
         UserDetails adminUserDetails =
                 User.builder()
                         .username(username)
@@ -269,7 +290,7 @@ class VirtualAccountControllerTest {
     }
 
     /**
-     * OWNER 계정으로 존재하는 게좌에 잔액을 충전합니다.
+     * OWNER 계정으로 존재하는 계좌에 잔액을 충전합니다.
      * 기대 결과: 200 OK
      */
     @Test
@@ -278,9 +299,6 @@ class VirtualAccountControllerTest {
         // Given
         int accountId = 100;
         BigDecimal amount = BigDecimal.valueOf(1000);
-
-        AccountRequest request = new AccountRequest(amount);
-
         AccountPaymentResponse response = new AccountPaymentResponse(
                 0, accountId, amount, amount, amount, LocalDateTime.now()
         );
@@ -310,7 +328,7 @@ class VirtualAccountControllerTest {
     }
 
     /**
-     * OWNER 계정으로 존재하지 않는 게좌에 잔액을 충전합니다.
+     * OWNER 계정으로 존재하지 않는 계좌에 잔액을 충전합니다.
      * 기대 결과: 404 NOT FOUND
      */
     @Test
@@ -318,8 +336,6 @@ class VirtualAccountControllerTest {
     void chargeAccountTest3() throws Exception {
         // Given
         int accountId = 500;
-        BigDecimal amount = BigDecimal.valueOf(1000);
-        AccountRequest request = new AccountRequest(amount);
 
         given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
                 .willThrow(new AccountNotFoundException(accountId));
@@ -355,7 +371,6 @@ class VirtualAccountControllerTest {
         // Given
         int accountId = 100;
         BigDecimal amount = BigDecimal.valueOf(1000);
-        AccountRequest request = new AccountRequest(amount);
         AccountPaymentResponse response = new AccountPaymentResponse(
                 0, accountId, amount, amount, amount, LocalDateTime.now()
         );
@@ -379,6 +394,5 @@ class VirtualAccountControllerTest {
                 // Then
                 .andExpect(status().isForbidden());
     }
-
 
 }

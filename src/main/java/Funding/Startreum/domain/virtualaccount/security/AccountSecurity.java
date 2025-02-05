@@ -1,5 +1,8 @@
 package Funding.Startreum.domain.virtualaccount.security;
 
+import Funding.Startreum.domain.users.UserService;
+import Funding.Startreum.domain.virtualaccount.entity.VirtualAccount;
+import Funding.Startreum.domain.virtualaccount.exception.AccountNotFoundException;
 import Funding.Startreum.domain.virtualaccount.repository.VirtualAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class AccountSecurity {
 
     private final VirtualAccountRepository repository;
+    private final UserService userService;
 
     /**
      * 계좌 소유자의 username과 현재 로그인한 사용자의 username을 비교하여 권한을 확인합니다.
@@ -27,14 +31,20 @@ public class AccountSecurity {
      * @throws AccessDeniedException 권한이 없을 경우 발생*
      */
     public boolean isAccountOwner(UserDetails userDetails, int accountId) {
-        repository.findById(accountId)
-                .map(account -> {
-                    boolean isOwner = account.getUser().getName().equals(userDetails.getUsername());
-                    if (!isOwner) {
-                        throw new AccessDeniedException("🔒 해당 계좌에 대한 접근 권한이 없습니다.");
-                    }
-                    return true;
-                });
+        VirtualAccount account = repository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException(accountId));
+
+        // 계좌에 저장된 User 엔티티에서 userId 추출
+        Integer accountUserId = userService.getUserByName(account.getUser().getName()).getUserId();
+
+
+        Integer loginUserId = userService.getUserByName(userDetails.getUsername()).getUserId();
+
+        boolean isOwner = accountUserId.equals(loginUserId);
+
+        if (!isOwner) {
+            throw new AccessDeniedException("🔒 해당 계좌에 대한 접근 권한이 없습니다.");
+        }
 
         return true;
     }
