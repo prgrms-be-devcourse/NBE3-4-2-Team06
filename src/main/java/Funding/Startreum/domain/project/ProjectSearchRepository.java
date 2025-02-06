@@ -47,4 +47,9 @@ public interface ProjectSearchRepository extends JpaRepository<Project, Integer>
     Page<Project> findAllApproved(Pageable pageable);
 
 
+<<<<<<< HEAD
 }
+=======
+
+}
+>>>>>>> feature/be/admin
