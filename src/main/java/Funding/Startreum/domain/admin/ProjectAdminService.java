@@ -22,6 +22,11 @@ public class ProjectAdminService {
         if (updatedRows == 0) {
             throw new IllegalArgumentException("❌ 해당 프로젝트가 존재하지 않습니다.");
         }
+
+        // 승인 거절(REJECTED) 상태라면 isDeleted = true
+        if (isApproved == Project.ApprovalStatus.REJECTED) {
+            projectAdminRepository.updateIsDeleted(projectId, true);
+        }
     }
 
     /**
@@ -32,6 +37,11 @@ public class ProjectAdminService {
         int updatedRows = projectAdminRepository.updateProjectStatus(projectId, status);
         if (updatedRows == 0) {
             throw new IllegalArgumentException("❌ 해당 프로젝트가 존재하지 않습니다.");
+        }
+
+        // 진행 실패(FAILED) 상태라면 isDeleted = true
+        if (status == Project.Status.FAILED) {
+            projectAdminRepository.updateIsDeleted(projectId, true);
         }
     }
 
