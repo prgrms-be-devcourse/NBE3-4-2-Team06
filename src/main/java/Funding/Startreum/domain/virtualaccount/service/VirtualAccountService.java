@@ -15,10 +15,13 @@ import Funding.Startreum.domain.virtualaccount.dto.VirtualAccountDtos;
 import Funding.Startreum.domain.virtualaccount.dto.request.AccountPaymentRequest;
 import Funding.Startreum.domain.virtualaccount.dto.request.AccountRequest;
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountPaymentResponse;
+import Funding.Startreum.domain.virtualaccount.dto.response.AccountRefundResponse;
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse;
 import Funding.Startreum.domain.virtualaccount.entity.VirtualAccount;
 import Funding.Startreum.domain.virtualaccount.exception.AccountNotFoundException;
+import Funding.Startreum.domain.virtualaccount.exception.FundingNotFoundException;
 import Funding.Startreum.domain.virtualaccount.exception.NotEnoughBalanceException;
+import Funding.Startreum.domain.virtualaccount.exception.TransactionNotFoundException;
 import Funding.Startreum.domain.virtualaccount.repository.VirtualAccountRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import static Funding.Startreum.domain.transaction.entity.Transaction.TransactionType.REFUND;
 import static Funding.Startreum.domain.transaction.entity.Transaction.TransactionType.REMITTANCE;
-import static Funding.Startreum.domain.virtualaccount.dto.response.AccountPaymentResponse.mapToAccountResponse;
+import static Funding.Startreum.domain.virtualaccount.dto.response.AccountPaymentResponse.mapToAccountPaymentResponse;
+import static Funding.Startreum.domain.virtualaccount.dto.response.AccountRefundResponse.mapToAccountRefundResponse;
 import static Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse.FromOwnVirtualAccount;
 
 @Service
@@ -83,35 +88,34 @@ public class VirtualAccountService {
     }
 
     /**
-     * 계좌 잔액 충전
+     * 계좌 잔액을 충전합니다.
      *
      * @param accountId 조회할 계좌 ID
      * @param request   잔액 정보가 담겨진 DTO
-     * @return AccountPaymentResponse DTO
+     * @return 충전 후 갱신된 계좌 정보 DTO
      */
     @Transactional
     public AccountPaymentResponse charge(int accountId, AccountRequest request) {
+        // 1. 계좌 조회
         VirtualAccount account = getAccount(accountId);
 
-        // 결제 전 금액
+        // 2. 잔액 업데이트 로직
         BigDecimal beforeMoney = account.getBalance();
-
-        // 잔액 업데이트
         account.setBalance(account.getBalance().add(request.amount()));
         virtualAccountRepository.save(account);
 
-        // 거래 내역 생성
+        // 3. 거래 내역 생성
         Transaction transaction = createTransaction(null, account, account, request.amount(), REMITTANCE);
-        transactionRepository.save(transaction);
 
-        return mapToAccountResponse(account, transaction, beforeMoney, request.amount(), account.getBalance());
+        // 4. 응답 객체 생성 및 반환
+        return mapToAccountPaymentResponse(account, transaction, beforeMoney, request.amount());
     }
 
     /**
      * 계좌를 조회합니다.
      *
      * @param accountId 조회할 계좌 ID
-     * @return 계좌
+     * @return 조회한 계좌를 반환합니다.
      */
     @Transactional(readOnly = true)
     public VirtualAccount getAccount(int accountId) {
@@ -120,10 +124,10 @@ public class VirtualAccountService {
     }
 
     /**
-     * 계좌 잔액 조회
+     * 계좌를 조회합니다.
      *
      * @param accountId 조회할 계좌 ID
-     * @return 계좌 응답 DTO
+     * @return 조회한 계좌의 정보 DTO를 반환합니다.
      */
     @Transactional(readOnly = true)
     public AccountResponse getAccountInfo(int accountId) {
@@ -142,47 +146,24 @@ public class VirtualAccountService {
     public AccountPaymentResponse payment(int accountId, AccountPaymentRequest request, String username) {
         // 1. 프로젝트 조회
         Project project = projectRepository.findById(request.projectId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 프로젝트 입니다: " + request.projectId()));
+                .orElseThrow(() -> new EntityNotFoundException("프로젝트를 찾을 수 없습니다. 프로젝트 ID: " + request.projectId()));
 
         // 2. 계좌 조회
-        VirtualAccount sendAccount = getAccount(accountId);
-        VirtualAccount receiveAccount = virtualAccountRepository.findBeneficiaryAccountByProjectId(request.projectId())
+        VirtualAccount payerAccount = getAccount(accountId);
+        VirtualAccount projectAccount = virtualAccountRepository.findBeneficiaryAccountByProjectId(request.projectId())
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
 
-        // 3. 결제 로직 - 계좌 잔액 업데이트
-        BigDecimal beforeMoney = sendAccount.getBalance();
+        // 3. 결제 로직 - 계좌 잔액 업데이트 (payerAccount에서 금액 차감, projectAccount에 금액 추가)
+        BigDecimal payerBalanceBefore  = payerAccount.getBalance();
         BigDecimal paymentAmount = request.amount();
+        processAccountPayment(payerBalanceBefore, paymentAmount, payerAccount, projectAccount);
 
-        processAccountPayment(beforeMoney, paymentAmount, sendAccount, receiveAccount);
-
-        // 4. 펀딩 내역 저장
+        // 4. 펀딩 및 거래 내역 저장
         Funding funding = createFunding(project, username, paymentAmount);
+        Transaction transaction = createTransaction(funding, payerAccount, projectAccount, paymentAmount, REMITTANCE);
 
-        // 5. 거래 내역 생성
-        Transaction transaction = createTransaction(funding, sendAccount, receiveAccount, paymentAmount, REMITTANCE);
-        transactionRepository.save(transaction);
-
-        // 6. 응답 객체 생성 및 반환
-        return mapToAccountResponse(sendAccount, transaction, beforeMoney, paymentAmount, sendAccount.getBalance());
-    }
-
-    /**
-     * 결제 금액에 따른 계좌 잔액 업데이트를 진행합니다.
-     *
-     * @param beforeMoney    결제 전 금액
-     * @param paymentAmount  결제 금액
-     * @param sendAccount    송금 계좌
-     * @param receiveAccount 수신 계좌
-     * @throws RuntimeException ️ ⚠️ 결제전 금액이 결제 금액보다 부족할 경우, 예외 논의 필요
-     */
-    private void processAccountPayment(BigDecimal beforeMoney, BigDecimal paymentAmount, VirtualAccount sendAccount, VirtualAccount receiveAccount) {
-        if (beforeMoney.compareTo(paymentAmount) < 0) {
-            throw new NotEnoughBalanceException(beforeMoney);
-        }
-        sendAccount.setBalance(beforeMoney.subtract(paymentAmount));
-        virtualAccountRepository.save(sendAccount);
-        receiveAccount.setBalance(receiveAccount.getBalance().add(paymentAmount));
-        virtualAccountRepository.save(receiveAccount);
+        // 5. 응답 객체 생성 및 반환 (결제 후 결제자 계좌 정보를 기준)
+        return mapToAccountPaymentResponse(payerAccount, transaction, payerBalanceBefore, paymentAmount);
     }
 
     /**
@@ -211,19 +192,92 @@ public class VirtualAccountService {
     }
 
     /**
-     * 거래 내역 생성 메서드
+     * 환불을 진행하는 로직입니다.
+     *
+     * @param payerAccountId 환불 받을 사용자 계좌 ID (결제한 계좌)
+     * @param transactionId  원 거래의 ID
+     * @return 환불 완료 후 갱신된 계좌 정보 DTO
      */
-    private Transaction createTransaction(Funding funing, VirtualAccount sendAccount, VirtualAccount receiveAccount, BigDecimal amount, Transaction.TransactionType type) {
+    @Transactional
+    public AccountRefundResponse refund(int payerAccountId, int transactionId) {
+        // 1. 원 거래 내역 조회
+        Transaction oldTransaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new TransactionNotFoundException(transactionId));
+
+        // 2. 계좌 조회: 환불은 수혜자 계좌에서 결제자(환불 대상) 계좌로 자금 이동
+        VirtualAccount payerAccount = getAccount(payerAccountId);
+        VirtualAccount projectAccount = virtualAccountRepository.findReceiverAccountByTransactionId(transactionId)
+                .orElseThrow(() -> new AccountNotFoundException(transactionId));
+
+        // 3. 환불 로직 - 계좌 잔액 업데이트 (projectAccount에서 환불 금액 차감, payerAccount에 추가)
+        BigDecimal beforeMoney = payerAccount.getBalance();
+        BigDecimal refundAmount = oldTransaction.getAmount();
+        processAccountPayment(beforeMoney, refundAmount, projectAccount, payerAccount);
+
+        // 4. 펀딩 취소 및 환불 거래 내역 저장
+        Funding funding = cancelFunding(oldTransaction.getFunding().getFundingId());
+        Transaction newTransaction = createTransaction(funding, projectAccount, payerAccount, refundAmount, REFUND);
+
+        // 5. 응답 객체 생성 및 반환 (환불 후 결제자 계좌 정보를 기준)
+        return mapToAccountRefundResponse(payerAccount, newTransaction, transactionId , refundAmount, beforeMoney);
+    }
+
+    /**
+     * 펀딩 내역을 취소합니다.
+     * @param fundingId 취소할 펀딩 ID
+     * @return 취소된 Funding 객체
+     */
+    private Funding cancelFunding(Integer fundingId) {
+        Funding funding = fundingRepository.findByFundingId(fundingId)
+                .orElseThrow(() -> new FundingNotFoundException(fundingId));
+
+        funding.setDeleted(true);
+        fundingRepository.save(funding);
+
+        return funding;
+    }
+
+    /**
+     * 결제 또는 환불 시 계좌 잔액 업데이트를 진행합니다.
+     *
+     * @param sourceBalance 결제(또는 환불) 전 출금 계좌의 잔액
+     * @param amount        거래 금액
+     * @param sourceAccount 출금(또는 환불 출금) 계좌
+     * @param targetAccount 입금(또는 환불 입금) 계좌
+     * @throws RuntimeException 잔액이 부족할 경우 예외 발생
+     */
+    private void processAccountPayment(BigDecimal sourceBalance, BigDecimal amount, VirtualAccount sourceAccount, VirtualAccount targetAccount) {
+        if (sourceBalance.compareTo(amount) < 0) {
+            throw new NotEnoughBalanceException(sourceBalance);
+        }
+        sourceAccount.setBalance(sourceBalance.subtract(amount));
+        virtualAccountRepository.save(sourceAccount);
+        targetAccount.setBalance(targetAccount.getBalance().add(amount));
+        virtualAccountRepository.save(targetAccount);
+    }
+
+    /**
+     * 거래 내역 생성 메서드
+     *
+     * @param funding       관련 펀딩 내역
+     * @param senderAccount 자금 출금 계좌 (결제 시에는 결제자, 환불 시에는 프로젝트 계좌)
+     * @param receiverAccount 자금 입금 계좌 (결제 시에는 프로젝트 계좌, 환불 시에는 결제자 계좌)
+     * @param amount        거래 금액
+     * @param type          거래 유형 (REMITTANCE 또는 REFUND)
+     * @return 생성된 Transaction 객체
+     */
+    private Transaction createTransaction(Funding funding, VirtualAccount senderAccount, VirtualAccount receiverAccount, BigDecimal amount, Transaction.TransactionType type) {
         Transaction transaction = new Transaction();
-        transaction.setFunding(funing);
+        transaction.setFunding(funding);
         transaction.setAdmin(userRepository.findByName("Admin").orElse(null));
-        transaction.setSenderAccount(sendAccount);
-        transaction.setReceiverAccount(receiveAccount);
+        transaction.setSenderAccount(senderAccount);
+        transaction.setReceiverAccount(receiverAccount);
         transaction.setAmount(amount);
         transaction.setType(type);
         transaction.setTransactionDate(LocalDateTime.now());
 
+        transactionRepository.save(transaction);
+
         return transaction;
     }
-
 }

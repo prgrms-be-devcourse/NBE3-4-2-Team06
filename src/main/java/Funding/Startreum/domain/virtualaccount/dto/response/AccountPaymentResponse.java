@@ -15,19 +15,18 @@ public record AccountPaymentResponse(
         LocalDateTime transactionDate   // 거래 일자
 ) {
 
-    public static AccountPaymentResponse mapToAccountResponse(
+    public static AccountPaymentResponse mapToAccountPaymentResponse(
             VirtualAccount account,
             Transaction transaction,
             BigDecimal beforeMoney,
-            BigDecimal chargeAmount,
-            BigDecimal afterMoney
+            BigDecimal chargeAmount
     ) {
         return new AccountPaymentResponse(
                 transaction.getTransactionId(),
                 account.getAccountId(),
                 beforeMoney,
                 chargeAmount,
-                afterMoney,
+                account.getBalance(),
                 transaction.getTransactionDate()
         );
     }

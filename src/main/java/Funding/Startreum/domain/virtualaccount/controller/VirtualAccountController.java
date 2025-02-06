@@ -6,6 +6,7 @@ import Funding.Startreum.domain.virtualaccount.dto.VirtualAccountDtos;
 import Funding.Startreum.domain.virtualaccount.dto.request.AccountPaymentRequest;
 import Funding.Startreum.domain.virtualaccount.dto.request.AccountRequest;
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountPaymentResponse;
+import Funding.Startreum.domain.virtualaccount.dto.response.AccountRefundResponse;
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse;
 import Funding.Startreum.domain.virtualaccount.service.VirtualAccountService;
 import jakarta.validation.Valid;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -68,7 +68,16 @@ public class VirtualAccountController {
     }
 
 
-    // 잔액 충전: 계좌에 금액을 충전합니다. 해당 계좌의 본인과 관리자만 가능합니다.
+    /**
+     * 잔액 충전: 계좌에 금액을 충전합니다.
+     * <p>
+     * 이 API는 계좌의 소유자나 관리자만 호출할 수 있습니다.
+     * </p>
+     *
+     * @param accountId 충전할 계좌의 ID. 해당 계좌의 소유자여야 합니다.
+     * @param request   충전할 금액 및 관련 정보를 담은 DTO.
+     * @return ApiResponse 객체 안에 충전된 계좌 정보를 포함하여 반환합니다.
+     */
     @PreAuthorize("hasRole('ADMIN') or @accountSecurity.isAccountOwner(principal, #accountId)")
     @PostMapping("/{accountId}")
     public ResponseEntity<?> chargeVirtualAccount(
@@ -79,7 +88,15 @@ public class VirtualAccountController {
         return ResponseEntity.ok(ApiResponse.success("계좌 충전에 성공했습니다.", response));
     }
 
-    // 계좌 내역 조회: 특정 계좌의 내역을 조회합니다. 해당 계좌의 본인과 관리자만 가능합니다.
+    /**
+     * 계좌 내역 조회: 특정 계좌의 거래 내역을 조회합니다.
+     * <p>
+     * 이 API는 계좌의 소유자나 관리자만 호출할 수 있습니다.
+     * </p>
+     *
+     * @param accountId 조회할 계좌의 ID.
+     * @return ApiResponse 객체 안에 조회된 계좌 거래 내역 정보를 포함하여 반환합니다.
+     */
     @PreAuthorize("hasRole('ADMIN') or @accountSecurity.isAccountOwner(principal, #accountId)")
     @GetMapping("/{accountId}")
     public ResponseEntity<?> getAccountTransactions(
@@ -89,7 +106,17 @@ public class VirtualAccountController {
         return ResponseEntity.ok(ApiResponse.success("계좌 내역 조회에 성공했습니다.", response));
     }
 
-    // 결제 처리: 결제 요청을 처리합니다.
+    /**
+     * 결제 처리: 결제 요청을 처리합니다.
+     * <p>
+     * 이 API는 계좌의 소유자나 관리자만 호출할 수 있습니다.
+     * </p>
+     *
+     * @param accountId   결제를 진행할 계좌의 ID.
+     * @param request     결제 요청 정보를 담은 DTO (예: 프로젝트 ID, 결제 금액 등).
+     * @param userDetails 현재 인증된 사용자의 세부 정보를 포함하는 객체.
+     * @return ApiResponse 객체 안에 결제가 완료된 계좌 정보를 포함하여 반환합니다.
+     */
     @PreAuthorize("hasRole('ADMIN') or @accountSecurity.isAccountOwner(principal, #accountId)")
     @PostMapping("/{accountId}/payment")
     public ResponseEntity<?> processPayment(
@@ -97,17 +124,28 @@ public class VirtualAccountController {
             @RequestBody @Valid AccountPaymentRequest request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        AccountPaymentResponse response = service.payment(accountId, request,  userDetails.getUsername());
+        AccountPaymentResponse response = service.payment(accountId, request, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success("결제에 성공했습니다.", response));
     }
 
-    // 환불 처리: 특정 거래에 대한 환불을 진행합니다.
+    /**
+     * 환불 처리: 특정 거래에 대한 환불을 진행합니다.
+     * <p>
+     * 이 API는 계좌의 소유자나 관리자만 호출할 수 있습니다.
+     * </p>
+     *
+     * @param accountId     환불을 요청하는 계좌의 ID (원래 결제에 사용된 계좌).
+     * @param transactionId 환불할 거래의 ID.
+     * @return ApiResponse 객체 안에 환불이 완료된 계좌 정보를 포함하여 반환합니다.
+     */
+    @PreAuthorize("hasRole('ADMIN') or @accountSecurity.isAccountOwner(principal, #accountId)")
     @PostMapping("/{accountId}/transactions/{transactionId}/refund")
-    public void processRefund(
-            @PathVariable int accountId,
+    public ResponseEntity<?> processRefund(
+            @PathVariable("accountId") @P("accountId") int accountId,
             @PathVariable int transactionId
     ) {
-        System.out.println("환불을 완료했습니다.");
+        AccountRefundResponse response = service.refund(accountId, transactionId);
+        return ResponseEntity.ok(ApiResponse.success("거래 환불에 성공했습니다.", response));
     }
 
 }

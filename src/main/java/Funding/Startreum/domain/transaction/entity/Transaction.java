@@ -1,19 +1,21 @@
 package Funding.Startreum.domain.transaction.entity;
 
-import Funding.Startreum.domain.users.User;
 import Funding.Startreum.domain.funding.Funding;
+import Funding.Startreum.domain.users.User;
 import Funding.Startreum.domain.virtualaccount.entity.VirtualAccount;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"funding", "senderAccount", "receiverAccount"}) // 순환 참조 방지
 @Entity
-@Table(name = "transactions")
+@Table(name = "Transaction")
 public class Transaction {
 
     @Id
