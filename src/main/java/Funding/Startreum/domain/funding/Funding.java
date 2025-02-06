@@ -37,4 +37,7 @@ public class Funding {
     private BigDecimal amount; // 후원 금액
 
     private LocalDateTime fundedAt; // 후원 일자
+
+    @Column(nullable = false)
+    private boolean isDeleted = false; // 삭제 여부, 기본 false
 }

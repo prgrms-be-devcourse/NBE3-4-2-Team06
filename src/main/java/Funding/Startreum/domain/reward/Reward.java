@@ -7,12 +7,14 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @ToString
 @Entity
-@Table(name = "rewards")
+@Table(name = "reward")
 public class Reward {
 
     @Id
@@ -26,4 +28,8 @@ public class Reward {
     private String description; // 리워드 설명
 
     private BigDecimal amount; // 리워드 최소 기준 금액
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

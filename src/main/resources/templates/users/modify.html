@@ -9,7 +9,7 @@
 <body>
 <div class="modify-container">
     <h2>프로필 수정</h2>
-    <p><strong>사용자 ID:</strong> <span id="userName" th:text="${username}"></span></p>
+    <p><strong>사용자 ID:</strong> <span id="userName"></span></p>
     <p><strong>이메일:</strong> <input type="email" class="form-control" id="editUserEmail" required></p>
     <p><strong>역할:</strong> <span id="userRole"></span></p>
     <p><strong>가입일:</strong> <span id="userCreatedAt"></span></p>
@@ -31,8 +31,11 @@
             window.close();
             return;
         }
+tus
 
         try {
+            console.log(`📌 사용자 정보 요청: /api/users/profile/${username}`);
+
             const response = await fetch(`/api/users/profile/${username}`, {
                 method: "GET",
                 headers: {
@@ -41,13 +44,19 @@
                 }
             });
 
-            if (!response.ok) throw new Error("사용자 정보를 불러올 수 없음");
+            if (!response.ok) {
+                throw new Error("사용자 정보를 불러올 수 없음");
+            }
 
             const data = await response.json();
+            console.log("📌 받은 사용자 데이터:", data);
+
+            document.getElementById("userName").textContent = data.data.name;
             document.getElementById("editUserEmail").value = data.data.email;
             document.getElementById("userRole").textContent = data.data.role;
             document.getElementById("userCreatedAt").textContent = new Date(data.data.createdAt).toISOString().split("T")[0];
             document.getElementById("userUpdatedAt").textContent = new Date(data.data.updatedAt).toISOString().split("T")[0];
+
         } catch (error) {
             console.error("사용자 정보 불러오기 오류:", error);
             alert("사용자 정보를 불러오는 데 실패했습니다.");
@@ -80,11 +89,25 @@
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || "이메일 업데이트 실패");
+                let errorMessage = "이메일 업데이트 실패";
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.message || errorMessage;
+                } catch (jsonError) {
+                    console.warn("⚠️ 서버 응답이 JSON이 아닙니다.");
+                }
+                throw new Error(errorMessage);
             }
 
-            alert("이메일이 성공적으로 수정되었습니다.");
+            let successMessage = "이메일이 성공적으로 수정되었습니다.";
+            try {
+                const responseData = await response.json();
+                successMessage = responseData.message || successMessage;
+            } catch (jsonError) {
+                console.warn("⚠️ 서버 응답이 JSON이 아닙니다. 성공 메시지 기본값 사용.");
+            }
+
+            alert(successMessage);
             window.opener.location.reload();  // 부모창 새로고침
             window.close();
         } catch (error) {

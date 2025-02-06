@@ -11,4 +11,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u WHERE LOWER(u.name) = LOWER(:name)")  // ✅ 대소문자 무시
     Optional<User> findByName(@Param("name") String name); // 이름 검색 (대소문자 무시)
+
+
 }

@@ -1,5 +1,6 @@
 package Funding.Startreum.domain.funding;
 
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +16,5 @@ public interface FundingRepository extends JpaRepository<Funding, Integer> {
         ORDER BY f.fundedAt DESC
         """)
     Page<Funding> findBySponsorEmail(@Param("email") String email, Pageable pageable);
+
 }
