@@ -29,6 +29,14 @@ public interface ProjectAdminRepository extends JpaRepository<Project, Integer> 
     int updateProjectStatus(Integer projectId, Status status);
 
     /**
+     * 🔹 특정 프로젝트의 삭제 상태(isDeleted) 변경
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE Project p SET p.isDeleted = :isDeleted WHERE p.projectId = :projectId")
+    void updateIsDeleted(Integer projectId, Boolean isDeleted);
+
+    /**
      * 🔹 승인 상태(isApproved)로 프로젝트 목록 조회 (관리자용)
      */
     List<Project> findByIsApproved(ApprovalStatus approvalStatus);
