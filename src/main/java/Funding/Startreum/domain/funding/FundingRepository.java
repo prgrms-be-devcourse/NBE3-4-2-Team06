@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 
 public interface FundingRepository extends JpaRepository<Funding, Integer> {
     @Query("""
@@ -17,4 +19,5 @@ public interface FundingRepository extends JpaRepository<Funding, Integer> {
         """)
     Page<Funding> findBySponsorEmail(@Param("email") String email, Pageable pageable);
 
+    Optional<Funding> findByFundingId(Integer fundingId);
 }

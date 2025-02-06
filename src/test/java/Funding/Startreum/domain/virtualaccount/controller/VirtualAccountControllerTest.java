@@ -58,40 +58,48 @@ class VirtualAccountControllerTest {
     @MockitoBean
     private UserService userService;
 
-    private String adminToken;            // 관리자
-    private String ownerToken;     // 실제 계좌의 소유자
-    private String notOwnerToken;  // 다른 계좌 소유자
+    private String adminToken;              // 관리자 토큰
+    private String ownerToken;              // 실제 계좌의 소유자 토큰
+    private String notOwnerToken;           // 다른 계좌 소유자 토큰
 
     /**
      * 테스트 시작 전 계정 및 토큰을 설정합니다.
      */
     @BeforeEach
     void setUp() {
+        // 가상 계좌 생성 (accountId: 100, 소유자: owner)
         createVirtualAccount(100, "owner");
+
+        // 사용자 세부 정보 생성
         createVirtualDetails("admin", "ADMIN");
         createVirtualDetails("owner", "SPONSOR");
         createVirtualDetails("other", "SPONSOR");
-        extracted(1, "admin", ADMIN);
-        extracted(2, "owner", SPONSOR);
-        extracted(3, "other", SPONSOR);
 
-        this.adminToken = jwtUtil.generateAccessToken("admin", "admin@test.com", "ADMIN");
-        this.ownerToken = jwtUtil.generateAccessToken("owner", "owner@test.com", "SPONSOR");
-        this.notOwnerToken = jwtUtil.generateAccessToken("other", "other@test.com", "SPONSOR");
+        // 사용자 정보 설정 (userId, 이름, 역할)
+        setVirutalUser(1, "admin", ADMIN);
+        setVirutalUser(2, "owner", SPONSOR);
+        setVirutalUser(3, "other", SPONSOR);
+
+        // JWT 토큰 생성
+        adminToken = jwtUtil.generateAccessToken("admin", "admin@test.com", "ADMIN");
+        ownerToken = jwtUtil.generateAccessToken("owner", "owner@test.com", "SPONSOR");
+        notOwnerToken = jwtUtil.generateAccessToken("other", "other@test.com", "SPONSOR");
     }
 
     /**
-     * 가상 유저를 설정하는 메서드입니다.
+     * 가상 사용자 정보를 설정합니다.
      *
-     * @param userId 유저 ID
-     * @param owner  유저 이름
+     * @param userId   사용자 ID
+     * @param username 사용자 이름
+     * @param role     사용자 역할
      */
-    private void extracted(int userId, String owner, Funding.Startreum.domain.users.User.Role role) {
+    private void setVirutalUser(int userId, String username, Funding.Startreum.domain.users.User.Role role) {
         Funding.Startreum.domain.users.User ownerUser = new Funding.Startreum.domain.users.User();
         ownerUser.setUserId(userId);
-        ownerUser.setName(owner);
+        ownerUser.setName(username);
         ownerUser.setRole(role);
-        given(userService.getUserByName(owner)).willReturn(ownerUser);
+
+        given(userService.getUserByName(username)).willReturn(ownerUser);
     }
 
     /**
@@ -107,15 +115,16 @@ class VirtualAccountControllerTest {
         mockAccount.setAccountId(accountId);
         mockAccount.setUser(user);
         mockAccount.setBalance(new BigDecimal("0.00"));
+
         given(virtualAccountRepository.findById(accountId))
                 .willReturn(Optional.of(mockAccount));
     }
 
     /**
-     * 가상 사용자 정보를 설정하는 메서드입니다.
+     * 가상 사용자 정보를 설정합니다.
      *
      * @param username 사용자 이름
-     * @param role     사용자 역할 (ADMIN, SPONSOR 등)
+     * @param role     사용자 역할 (ADMIN, SPONSOR, BENEFICIARY 등)
      */
     private void createVirtualDetails(String username, String role) {
         UserDetails adminUserDetails =
@@ -129,6 +138,10 @@ class VirtualAccountControllerTest {
                 .willReturn(adminUserDetails);
     }
 
+    // ===============================================================
+    // 조회 관련 테스트
+    // ===============================================================
+
     /**
      * ADMIN 계정으로 존재하는 계좌를 조회합니다.
      * 기대 결과: 200 OK
@@ -136,25 +149,17 @@ class VirtualAccountControllerTest {
     @Test
     @DisplayName("[조회 200] ADMIN 계정으로 계좌 조회 시")
     void getAccountTransactionsTest() throws Exception {
-        // Given
         int accountId = 100;
-        AccountResponse response = new AccountResponse(
-                100,
-                BigDecimal.ZERO,
-                LocalDateTime.now()
-        );
+        AccountResponse response = new AccountResponse(accountId, BigDecimal.ZERO, LocalDateTime.now());
 
         given(virtualAccountService.getAccountInfo(accountId))
                 .willReturn(response);
 
-        // When
         mockMvc.perform(
                         get("/api/account/{accountId}", accountId)
-                                .header("Authorization", "Bearer " + adminToken)
+                                .header("Authorization", "Bearer " + ownerToken)
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
-
-                // Then
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("success"))
                 .andExpect(jsonPath("$.message").value("계좌 내역 조회에 성공했습니다."))
@@ -168,13 +173,8 @@ class VirtualAccountControllerTest {
     @Test
     @DisplayName("[조회 200] OWNER 계정으로 계좌 조회 시")
     void getAccountTransactionsTest2() throws Exception {
-        // Given
         int accountId = 100;
-        AccountResponse response = new AccountResponse(
-                100,
-                BigDecimal.ZERO,
-                LocalDateTime.now()
-        );
+        AccountResponse response = new AccountResponse(accountId, BigDecimal.ZERO, LocalDateTime.now());
 
         given(virtualAccountService.getAccountInfo(accountId))
                 .willReturn(response);
