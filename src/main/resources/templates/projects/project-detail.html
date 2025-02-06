@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>프로젝트 상세 정보</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" th:href="@{/css/detail.css}">
+</head>
+<body>
+
+<!-- Header -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container mt-5">
+    <h1 id="projectTitle"></h1>
+    <img id="projectBanner" src="" alt="프로젝트 배너 이미지" class="img-fluid">
+    <p id="projectDescription"></p>
+    <p>목표 금액: <span id="fundingGoal"></span> 원</p>
+    <p>현재 모금: <span id="currentFunding"></span> 원</p>
+    <p>상태: <span id="status"></span></p>
+    <p>시작일: <span id="startDate"></span></p>
+    <p>종료일: <span id="endDate"></span></p>
+
+    <!-- 후원하기 버튼 (항상 표시됨) -->
+    <div class="mt-4">
+        <button class="btn btn-primary btn-lg" onclick="openFundingModal()">후원하기</button>
+    </div>
+</div>
+
+<script>
+    let userRole = ""; // 사용자 역할 저장
+
+    document.addEventListener('DOMContentLoaded', function () {
+        let projectId = window.location.pathname.split('/').pop();
+        let apiUrl = `/api/projects/${projectId}`;
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("projectTitle").innerText = data.title;
+                document.getElementById("projectBanner").src = data.bannerUrl;
+                document.getElementById("projectDescription").innerText = data.description;
+                document.getElementById("fundingGoal").innerText = data.fundingGoal.toLocaleString();
+                document.getElementById("currentFunding").innerText = data.currentFunding.toLocaleString();
+                document.getElementById("status").innerText = data.status;
+                document.getElementById("startDate").innerText = data.startDate;
+                document.getElementById("endDate").innerText = data.endDate;
+            })
+            .catch(error => {
+                console.error("프로젝트 상세 불러오기 오류:", error);
+                alert("프로젝트 정보를 불러오는 중 오류가 발생했습니다.");
+            });
+
+        // ✅ 로그인 정보에서 역할 가져오기
+        const accessToken = localStorage.getItem("accessToken");
+        if (accessToken) {
+            try {
+                const tokenPayload = JSON.parse(atob(accessToken.split(".")[1]));
+                userRole = tokenPayload.role || "";
+            } catch (error) {
+                console.error("JWT 디코딩 오류:", error);
+            }
+        }
+    });
+
+    function openFundingModal() {
+        if (userRole !== "ROLE_SPONSOR") {
+            alert("❌ 후원자는 ROLE_SPONSOR 사용자만 가능합니다.");
+            return;
+        }
+
+        let amount = prompt("후원 금액을 입력하세요 (최소 10,000원)");
+
+        if (amount && parseInt(amount) >= 10000) {
+            processFunding(parseInt(amount));
+        } else {
+            alert("최소 후원 금액은 10,000원 이상이어야 합니다.");
+        }
+    }
+
+    async function processFunding(amount) {
+        const accessToken = localStorage.getItem("accessToken");
+        const projectId = window.location.pathname.split('/').pop();
+
+        try {
+            const response = await fetch(`/api/funding/${projectId}`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ amount })
+            });
+
+            if (!response.ok) {
+                throw new Error("후원 요청 실패");
+            }
+
+            alert("✅ 후원이 완료되었습니다!");
+            location.reload(); // 후원 완료 후 새로고침
+        } catch (error) {
+            console.error("후원 오류:", error);
+            alert("후원 중 문제가 발생했습니다.");
+        }
+    }
+</script>
+
+</body>
+</html>

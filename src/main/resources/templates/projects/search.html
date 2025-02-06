@@ -3,7 +3,6 @@
 <head>
   <title>프로젝트 검색</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
   <link rel="stylesheet" th:href="@{/css/search.css}">
 </head>
 <body>
@@ -42,19 +41,18 @@
              }
 
              data.data.forEach(project => {
-                 let fundingPercentage = ((project.currentFunding / project.fundingGoal) * 100).toFixed(1); // 소수점 1자리까지 표시
+                 let fundingPercentage = ((project.currentFunding / project.fundingGoal) * 100).toFixed(1);
                  let statusText = getStatusText(project.status);
                  let statusClass = getStatusClass(project.status);
 
                  let projectElement = document.createElement('li');
                  projectElement.innerHTML = `
-                     <a href="/projects/detail?id=${project.projectId}">${project.title}</a>
+                     <a href="/projects/${project.projectId}" class="project-title">${project.title}</a>
                      <p>${project.description}</p>
                      <p>목표 금액: ${project.fundingGoal.toLocaleString()} 원</p>
                      <p>현재 모금: ${project.currentFunding.toLocaleString()} 원</p>
                      <p class="${statusClass}">상태: ${statusText} (${fundingPercentage}%)</p>
 
-                     <!-- 퍼센트 막대 -->
                      <div class="progress-container">
                          <div class="progress-bar" style="width: ${fundingPercentage}%;"></div>
                      </div>
@@ -69,7 +67,6 @@
          });
  });
 
- /* 상태 텍스트 한글 변환 */
  function getStatusText(status) {
      switch (status) {
          case 'ONGOING': return '진행중';
@@ -79,7 +76,6 @@
      }
  }
 
- /* 상태별 스타일 클래스 반환 */
  function getStatusClass(status) {
      switch (status) {
          case 'ONGOING': return 'status-ongoing';

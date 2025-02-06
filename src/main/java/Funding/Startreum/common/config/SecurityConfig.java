@@ -57,6 +57,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/projects/search").permitAll() // ✅ 검색 API를 인증 없이 허용
                         .requestMatchers(HttpMethod.GET, "/projects/search").permitAll()  // ✅ 검색 페이지(View) 접근 허용
 
+                        // ✅ 프로젝트 상세 API는 인증 없이 접근 가능
+                        .requestMatchers(HttpMethod.GET, "/api/projects/{projectId}").permitAll()
+
+                        // ✅ 프로젝트 상세 페이지(View)는 인증 없이 접근 가능
+                        .requestMatchers(HttpMethod.GET, "/projects/{projectId}").permitAll()
+
+
                         // ✅ 인증 없이 접근 가능한 정적 리소스 및 공용 API
                         .requestMatchers("/", "/home", "/index.html").permitAll()
                         .requestMatchers("/favicon.ico", "/css/**", "/js/**", "/images/**").permitAll()
