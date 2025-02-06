@@ -3,8 +3,8 @@ package Funding.Startreum.domain.virtualaccount.service;
 
 import Funding.Startreum.domain.funding.Funding;
 import Funding.Startreum.domain.funding.FundingRepository;
-import Funding.Startreum.domain.project.Project;
-import Funding.Startreum.domain.project.ProjectRepository;
+import Funding.Startreum.domain.project.entity.Project;
+import Funding.Startreum.domain.project.repository.ProjectRepository;
 import Funding.Startreum.domain.reward.RewardRepository;
 import Funding.Startreum.domain.transaction.entity.Transaction;
 import Funding.Startreum.domain.transaction.repository.TransactionRepository;
@@ -154,7 +154,7 @@ public class VirtualAccountService {
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
 
         // 3. 결제 로직 - 계좌 잔액 업데이트 (payerAccount에서 금액 차감, projectAccount에 금액 추가)
-        BigDecimal payerBalanceBefore  = payerAccount.getBalance();
+        BigDecimal payerBalanceBefore = payerAccount.getBalance();
         BigDecimal paymentAmount = request.amount();
         processAccountPayment(payerBalanceBefore, paymentAmount, payerAccount, projectAccount);
 
@@ -219,11 +219,12 @@ public class VirtualAccountService {
         Transaction newTransaction = createTransaction(funding, projectAccount, payerAccount, refundAmount, REFUND);
 
         // 5. 응답 객체 생성 및 반환 (환불 후 결제자 계좌 정보를 기준)
-        return mapToAccountRefundResponse(payerAccount, newTransaction, transactionId , refundAmount, beforeMoney);
+        return mapToAccountRefundResponse(payerAccount, newTransaction, transactionId, refundAmount, beforeMoney);
     }
 
     /**
      * 펀딩 내역을 취소합니다.
+     *
      * @param fundingId 취소할 펀딩 ID
      * @return 취소된 Funding 객체
      */
@@ -259,11 +260,11 @@ public class VirtualAccountService {
     /**
      * 거래 내역 생성 메서드
      *
-     * @param funding       관련 펀딩 내역
-     * @param senderAccount 자금 출금 계좌 (결제 시에는 결제자, 환불 시에는 프로젝트 계좌)
+     * @param funding         관련 펀딩 내역
+     * @param senderAccount   자금 출금 계좌 (결제 시에는 결제자, 환불 시에는 프로젝트 계좌)
      * @param receiverAccount 자금 입금 계좌 (결제 시에는 프로젝트 계좌, 환불 시에는 결제자 계좌)
-     * @param amount        거래 금액
-     * @param type          거래 유형 (REMITTANCE 또는 REFUND)
+     * @param amount          거래 금액
+     * @param type            거래 유형 (REMITTANCE 또는 REFUND)
      * @return 생성된 Transaction 객체
      */
     private Transaction createTransaction(Funding funding, VirtualAccount senderAccount, VirtualAccount receiverAccount, BigDecimal amount, Transaction.TransactionType type) {
