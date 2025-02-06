@@ -14,30 +14,13 @@ import java.util.stream.Collectors;
 public class AdminProjectApiController {
 
     private final ProjectAdminRepository projectAdminRepository;
+    private final ProjectAdminService projectAdminService;
 
-    public AdminProjectApiController(ProjectAdminRepository projectAdminRepository) {
+    public AdminProjectApiController(ProjectAdminRepository projectAdminRepository, ProjectAdminService projectAdminService) {
         this.projectAdminRepository = projectAdminRepository;
+        this.projectAdminService = projectAdminService;
     }
 
-    /**
-     * 🔹 현재 로그인한 사용자의 권한 확인 API
-     */
-    @GetMapping("/check-admin")
-    public ResponseEntity<String> checkAdminRole(Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(401).body("❌ 사용자가 로그인되지 않았습니다.");
-        }
-
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch(role -> role.equals("ROLE_ADMIN"));
-
-        if (isAdmin) {
-            return ResponseEntity.ok("✅ 현재 사용자는 ROLE_ADMIN 권한을 가지고 있습니다.");
-        } else {
-            return ResponseEntity.status(403).body("❌ 현재 사용자는 ROLE_ADMIN이 아닙니다.");
-        }
-    }
 
     /**
      * 🔹 프로젝트 목록 조회 (is_approved 상태 필터링 가능)
@@ -91,13 +74,8 @@ public class AdminProjectApiController {
             return ResponseEntity.status(403).body("❌ 권한 없음");
         }
 
-        if (updateDto.getIsApproved() != null) {
-            projectAdminRepository.updateApprovalStatus(projectId, updateDto.getIsApproved());
-        }
-
-        if (updateDto.getStatus() != null) {
-            projectAdminRepository.updateProjectStatus(projectId, updateDto.getStatus());
-        }
+        // Repository 호출 대신 Service 호출로 변경
+        projectAdminService.updateProject(projectId, updateDto);
 
         return ResponseEntity.ok("✅ 프로젝트 상태가 변경되었습니다.");
     }
