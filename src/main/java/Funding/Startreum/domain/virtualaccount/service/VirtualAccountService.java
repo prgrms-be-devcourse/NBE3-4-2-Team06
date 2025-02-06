@@ -5,7 +5,6 @@ import Funding.Startreum.domain.funding.Funding;
 import Funding.Startreum.domain.funding.FundingRepository;
 import Funding.Startreum.domain.project.Project;
 import Funding.Startreum.domain.project.ProjectRepository;
-import Funding.Startreum.domain.reward.Reward;
 import Funding.Startreum.domain.reward.RewardRepository;
 import Funding.Startreum.domain.transaction.entity.Transaction;
 import Funding.Startreum.domain.transaction.repository.TransactionRepository;
@@ -19,6 +18,7 @@ import Funding.Startreum.domain.virtualaccount.dto.response.AccountPaymentRespon
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse;
 import Funding.Startreum.domain.virtualaccount.entity.VirtualAccount;
 import Funding.Startreum.domain.virtualaccount.exception.AccountNotFoundException;
+import Funding.Startreum.domain.virtualaccount.exception.NotEnoughBalanceException;
 import Funding.Startreum.domain.virtualaccount.repository.VirtualAccountRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.Optional;
 
 import static Funding.Startreum.domain.transaction.entity.Transaction.TransactionType.REMITTANCE;
 import static Funding.Startreum.domain.virtualaccount.dto.response.AccountPaymentResponse.mapToAccountResponse;
@@ -136,8 +134,8 @@ public class VirtualAccountService {
      * 결제를 진행하는 로직입니다.
      *
      * @param accountId 결제할 사용자의 게좌 ID
-     * @param request projectId과 결제 금액이 담겨져 있는 DTO
-     * @param username 결제할 사용자 이름
+     * @param request   projectId과 결제 금액이 담겨져 있는 DTO
+     * @param username  결제할 사용자 이름
      * @return 결제한 계좌의 정보 DTO를 반환합니다.
      */
     @Transactional
@@ -171,17 +169,15 @@ public class VirtualAccountService {
     /**
      * 결제 금액에 따른 계좌 잔액 업데이트를 진행합니다.
      *
-     * @param beforeMoney   결제 전 금액
-     * @param paymentAmount 결제 금액
-     * @param sendAccount 송금 계좌
+     * @param beforeMoney    결제 전 금액
+     * @param paymentAmount  결제 금액
+     * @param sendAccount    송금 계좌
      * @param receiveAccount 수신 계좌
      * @throws RuntimeException ️ ⚠️ 결제전 금액이 결제 금액보다 부족할 경우, 예외 논의 필요
-     *
-     * TODO : 예외시 에러 응답 반환 만들기
      */
     private void processAccountPayment(BigDecimal beforeMoney, BigDecimal paymentAmount, VirtualAccount sendAccount, VirtualAccount receiveAccount) {
         if (beforeMoney.compareTo(paymentAmount) < 0) {
-            throw new RuntimeException("잔액이 부족합니다. 현재 잔액: " + beforeMoney);
+            throw new NotEnoughBalanceException(beforeMoney);
         }
         sendAccount.setBalance(beforeMoney.subtract(paymentAmount));
         virtualAccountRepository.save(sendAccount);
@@ -192,8 +188,8 @@ public class VirtualAccountService {
     /**
      * 펀딩 내역을 저장 후 반환합니다.
      *
-     * @param project 펀딩할 프로젝트
-     * @param username 펀딩한 유저
+     * @param project       펀딩할 프로젝트
+     * @param username      펀딩한 유저
      * @param paymentAmount 펀딩 금액
      * @return 정보가 담긴 Funding 객체
      */
@@ -226,7 +222,6 @@ public class VirtualAccountService {
         transaction.setAmount(amount);
         transaction.setType(type);
         transaction.setTransactionDate(LocalDateTime.now());
-
 
         return transaction;
     }

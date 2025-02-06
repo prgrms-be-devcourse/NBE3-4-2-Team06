@@ -17,4 +17,11 @@ public class VirtualAccountExceptionHandler {
                 .body(ApiResponse.error(e.getMessage()));
     }
 
+    @ExceptionHandler(NotEnoughBalanceException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotEnoughBalance(NotEnoughBalanceException e) {
+        return ResponseEntity
+                .status(HttpStatus.PAYMENT_REQUIRED)
+                .body(ApiResponse.error(e.getMessage()));
+    }
+
 }

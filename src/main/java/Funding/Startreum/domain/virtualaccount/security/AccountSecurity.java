@@ -36,8 +36,6 @@ public class AccountSecurity {
 
         // 계좌에 저장된 User 엔티티에서 userId 추출
         Integer accountUserId = userService.getUserByName(account.getUser().getName()).getUserId();
-
-
         Integer loginUserId = userService.getUserByName(userDetails.getUsername()).getUserId();
 
         boolean isOwner = accountUserId.equals(loginUserId);
