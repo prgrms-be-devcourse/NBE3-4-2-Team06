@@ -112,8 +112,8 @@ public class RewardRestController {
             @PathVariable("rewardId") int rewardId,
             @Valid @RequestBody RewardUpdateRequest request
     ) {
-        RewardResponse rewardResponse = service.generateUpdatedRewardResponse(rewardId, request);
-        return ResponseEntity.ok(ApiResponse.success("리워드 수정에 성공했습니다.", rewardResponse));
+        RewardResponse response = service.generateUpdatedRewardResponse(rewardId, request);
+        return ResponseEntity.ok(ApiResponse.success("리워드 수정에 성공했습니다.", response));
     }
 
     /**
