@@ -18,79 +18,89 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static Funding.Startreum.domain.comment.dto.response.CommentResponse.toResponse;
+
 @Service
 @RequiredArgsConstructor
 public class CommentService {
 
-    final private CommentRepository repository;
+    final private CommentRepository commentRepository;
     final private UserRepository userRepository;
     final private ProjectRepository projectRepository;
 
     @Transactional(readOnly = true)
-    public List<CommentResponse> getComment(int projectId) {
-        List<Comment> comments = repository.findByProject_ProjectId(projectId);
+    public Comment getComment(int commentId) {
+        return commentRepository.findByCommentId(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다 : " + commentId));
+    }
 
+    @Transactional(readOnly = true)
+    public List<Comment> getComments(int projectId) {
+        return commentRepository.findByProject_ProjectId(projectId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CommentResponse> generateCommentsResponse(int projectId) {
+        List<Comment> comments = getComments(projectId);
         return comments.stream()
-                .map(this::mapToDto)
+                .map(CommentResponse::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public CommentResponse createComment(int projectId, CommentRequest request, String username) {
+    public Comment createComment(int projectId, CommentRequest request, String username) {
         Comment comment = new Comment();
 
         User user = userRepository.findByName(username)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다 : " + username));
+                .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다 : " + username));
 
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new IllegalArgumentException("프로젝트를 찾을 수 없습니다 : " + projectId));
+                .orElseThrow(() -> new EntityNotFoundException("프로젝트를 찾을 수 없습니다 : " + projectId));
 
         comment.setProject(project);
         comment.setUser(user);
         comment.setContent(request.content());
         comment.setCreatedAt(LocalDateTime.now());
         comment.setUpdatedAt(LocalDateTime.now());
-        repository.save(comment);
+        commentRepository.save(comment);
 
-        return mapToDto(comment);
+        return comment;
     }
 
     @Transactional
-    public CommentResponse modifyComment(CommentRequest request, int commentId, String username) {
-        Comment comment = repository.findByCommentId(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다 : " + commentId));
+    public CommentResponse generateNewCommentResponse(int projectId, CommentRequest request, String username) {
+        Comment comment = createComment(projectId, request, username);
+        return toResponse(comment);
+    }
+
+    @Transactional
+    public Comment updateComment(CommentRequest request, int commentId, String username) {
+        Comment comment = getComment(commentId);
 
         if (!comment.getUser().getName().equals(username)) {
             throw new AccessDeniedException("댓글 수정 권한이 없습니다.");
         }
 
         comment.setContent(request.content());
-        repository.save(comment);
 
-        return mapToDto(comment);
+        return comment;
+    }
+
+    @Transactional
+    public CommentResponse generateUpdatedCommentResponse(CommentRequest request, int commentId, String username) {
+        Comment comment = updateComment(request, commentId, username);
+        return toResponse(comment);
     }
 
     @Transactional
     public void deleteComment(int commentId, String username) {
-        Comment comment = repository.findByCommentId(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("댓글을 찾을 수 없습니다 : " + commentId));
+        Comment comment = getComment(commentId);
 
         if (!comment.getUser().getName().equals(username)) {
             throw new AccessDeniedException("댓글 삭제 권한이 없습니다.");
         }
 
-        repository.delete(comment);
+        commentRepository.delete(comment);
     }
-
-    private CommentResponse mapToDto(Comment comment) {
-        return new CommentResponse(
-                comment.getCommentId(),
-                comment.getProject().getProjectId(),
-                comment.getUser().getUserId(),
-                comment.getContent(),
-                comment.getCreatedAt(),
-                comment.getUpdatedAt()
-        );
-    }
-
 }
+

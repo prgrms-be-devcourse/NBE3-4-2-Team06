@@ -6,6 +6,7 @@ import Funding.Startreum.domain.users.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -59,6 +60,9 @@ public class SecurityConfig {
 
                                 // ✅ 프로필 수정 페이지 접근 허용 (로그인 없이 가능)
                                 .requestMatchers("/profile/modify/{name}").permitAll()
+
+                                //✅ 댓글 조회 허용 (로그인 없이 가능)
+                                .requestMatchers(HttpMethod.GET,"/api/comment/**").permitAll()
 
                                 // ✅ 프로필 API는 인증된 사용자만 접근 가능
                                 .requestMatchers("/api/users/profile/{name}").hasAnyRole("ADMIN", "BENEFICIARY", "SPONSOR")
