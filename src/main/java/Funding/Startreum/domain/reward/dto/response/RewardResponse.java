@@ -1,5 +1,7 @@
 package Funding.Startreum.domain.reward.dto.response;
 
+import Funding.Startreum.domain.reward.entity.Reward;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -11,4 +13,15 @@ public record RewardResponse(
         LocalDateTime createdAt,    // 생성일자
         LocalDateTime updatedAt     // 수정일자
 ) {
+    public static RewardResponse FromReward(Reward reward) {
+        return new RewardResponse(
+                reward.getRewardId(),
+                reward.getProject().getProjectId(),
+                reward.getDescription(),
+                reward.getAmount(),
+                reward.getCreatedAt(),
+                reward.getUpdatedAt()
+        );
+    }
+
 }

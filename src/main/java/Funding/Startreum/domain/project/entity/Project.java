@@ -1,4 +1,5 @@
-package Funding.Startreum.domain.project;
+package Funding.Startreum.domain.project.entity;
+
 
 import Funding.Startreum.domain.comment.Comment;
 import Funding.Startreum.domain.funding.Funding;
@@ -16,7 +17,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "creator")  // 순환 참조 방지
 @Entity
 @Table(name = "project")
 public class Project {

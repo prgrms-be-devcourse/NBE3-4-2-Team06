@@ -1,6 +1,7 @@
 package Funding.Startreum.domain.reward.entity;
 
-import Funding.Startreum.domain.project.Project;
+
+import Funding.Startreum.domain.project.entity.Project;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @Entity
-@Table(name = "rewards")
+@Table(name = "reward")
 public class Reward {
 
     @Id
@@ -28,7 +29,7 @@ public class Reward {
 
     private BigDecimal amount; // 리워드 최소 기준 금액
 
-    private LocalDateTime createdAt; // 생성 일자
+    private LocalDateTime createdAt;
 
-    private LocalDateTime updatedAt; // 수정 일자
+    private LocalDateTime updatedAt;
 }
