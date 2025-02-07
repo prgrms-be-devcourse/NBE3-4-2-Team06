@@ -16,7 +16,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "creator")  // 순환 참조 방지
 @Entity
 @Table(name = "project")
 public class Project {

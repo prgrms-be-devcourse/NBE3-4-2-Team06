@@ -33,6 +33,7 @@ public class VirtualAccountController {
      */
     @GetMapping("/user/{name}")
     public ResponseEntity<VirtualAccountDtos> getAccount(@PathVariable String name, Principal principal) {
+        System.out.println(principal);
         System.out.println("🔍 Principal 정보: " + (principal != null ? principal.getName() : "NULL"));
         System.out.println("🔍 요청된 사용자: " + name);
 
@@ -80,11 +81,29 @@ public class VirtualAccountController {
      */
     @PreAuthorize("hasRole('ADMIN') or @accountSecurity.isAccountOwner(principal, #accountId)")
     @PostMapping("/{accountId}")
-    public ResponseEntity<?> chargeVirtualAccount(
+    public ResponseEntity<?> chargeAccountByAccountId(
             @PathVariable("accountId") @P("accountId") int accountId,
             @RequestBody @Valid AccountRequest request
     ) {
-        AccountPaymentResponse response = service.charge(accountId, request);
+        AccountPaymentResponse response = service.chargeByAccountId(accountId, request);
+        return ResponseEntity.ok(ApiResponse.success("계좌 충전에 성공했습니다.", response));
+    }
+
+    /**
+     * 잔액 충전: 현재 로그인한 사용자의 계좌에 금액을 충전합니다.
+     * <p>
+     * 이 API는 자신의 계좌에만 접근 가능합니다.
+     * </p>
+     *
+     * @param request 충전할 금액 및 관련 정보를 담은 DTO.
+     * @return ApiResponse 객체 안에 충전된 계좌 정보를 포함하여 반환합니다.
+     */
+    @PostMapping
+    public ResponseEntity<?> chargeOwnAccountByUserName(
+            @RequestBody @Valid AccountRequest request,
+            Principal principal
+    ) {
+        AccountPaymentResponse response = service.chargeByUsername(principal.getName(), request);
         return ResponseEntity.ok(ApiResponse.success("계좌 충전에 성공했습니다.", response));
     }
 
@@ -99,7 +118,7 @@ public class VirtualAccountController {
      */
     @PreAuthorize("hasRole('ADMIN') or @accountSecurity.isAccountOwner(principal, #accountId)")
     @GetMapping("/{accountId}")
-    public ResponseEntity<?> getAccountTransactions(
+    public ResponseEntity<?> getAccountByAccountId(
             @PathVariable("accountId") @P("accountId") int accountId
     ) {
         AccountResponse response = service.getAccountInfo(accountId);
@@ -107,29 +126,65 @@ public class VirtualAccountController {
     }
 
     /**
-     * 결제 처리: 결제 요청을 처리합니다.
+     * 계좌 내역 조회: 현재 로그인한 사용자의 계좌 잔액을 조회합니다.
+     * <p>
+     * 이 API는 자신의 계좌에만 접근 가능합니다.
+     * </p>
+     * *
+     *
+     * @return ApiResponse 객체 안에 조회된 계좌 거래 내역 정보를 포함하여 반환합니다.
+     */
+    @GetMapping
+    public ResponseEntity<?> getAccountByUserName(
+            Principal principal
+    ) {
+        AccountResponse response = service.getAccountInfo(principal.getName());
+        return ResponseEntity.ok(ApiResponse.success("계좌 내역 조회에 성공했습니다.", response));
+    }
+
+    /**
+     * 결제 처리: 특정 계좌의 결제 요청을 처리합니다.
      * <p>
      * 이 API는 계좌의 소유자나 관리자만 호출할 수 있습니다.
      * </p>
      *
-     * @param accountId   결제를 진행할 계좌의 ID.
-     * @param request     결제 요청 정보를 담은 DTO (예: 프로젝트 ID, 결제 금액 등).
-     * @param userDetails 현재 인증된 사용자의 세부 정보를 포함하는 객체.
+     * @param accountId 결제를 진행할 계좌의 ID.
+     * @param request   결제 요청 정보를 담은 DTO (예: 프로젝트 ID, 결제 금액 등).
+     * @param principal 현재 인증된 사용자의 세부 정보를 포함하는 객체.
      * @return ApiResponse 객체 안에 결제가 완료된 계좌 정보를 포함하여 반환합니다.
      */
     @PreAuthorize("hasRole('ADMIN') or @accountSecurity.isAccountOwner(principal, #accountId)")
     @PostMapping("/{accountId}/payment")
-    public ResponseEntity<?> processPayment(
+    public ResponseEntity<?> processPaymentByAccountId(
             @PathVariable("accountId") @P("accountId") int accountId,
             @RequestBody @Valid AccountPaymentRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
+            Principal principal
     ) {
-        AccountPaymentResponse response = service.payment(accountId, request, userDetails.getUsername());
+        AccountPaymentResponse response = service.payment(accountId, request, principal.getName());
         return ResponseEntity.ok(ApiResponse.success("결제에 성공했습니다.", response));
     }
 
     /**
-     * 환불 처리: 특정 거래에 대한 환불을 진행합니다.
+     * 결제 처리: 현재 로그인한 사용자의 계좌 결제 요청을 처리합니다.
+     * <p>
+     * 이 API는 계좌의 소유자나 관리자만 호출할 수 있습니다.
+     * </p>
+     *
+     * @param request     결제 요청 정보를 담은 DTO (예: 프로젝트 ID, 결제 금액 등).
+     * @param userDetails 현재 인증된 사용자의 세부 정보를 포함하는 객체.
+     * @return ApiResponse 객체 안에 결제가 완료된 계좌 정보를 포함하여 반환합니다.
+     */
+    @PostMapping("/payment")
+    public ResponseEntity<?> processPaymentByUserName(
+            @RequestBody @Valid AccountPaymentRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        AccountPaymentResponse response = service.payment(request, userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success("결제에 성공했습니다.", response));
+    }
+
+    /**
+     * 환불 처리: 특정 계좌에서, 거래에 대한 환불을 진행합니다.
      * <p>
      * 이 API는 계좌의 소유자나 관리자만 호출할 수 있습니다.
      * </p>

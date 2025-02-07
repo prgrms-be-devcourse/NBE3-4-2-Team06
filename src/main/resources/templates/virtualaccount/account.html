@@ -9,6 +9,7 @@
 
 <div th:replace="~{fragments/header :: header}"></div>
 
+<!-- TODO : 계좌 충전 -->
 <div class="account-container">
     <h2>계좌 관리</h2>
 
@@ -37,6 +38,7 @@
 
 <script>
     document.getElementById("fetch-account-btn").addEventListener("click", async function () {
+
      const userNameElement = document.getElementById("username");
      const userName = userNameElement ? userNameElement.getAttribute("data-user-name") : "unknown";
 
@@ -130,6 +132,59 @@
              alert("계좌 생성에 실패했습니다.");
          }
      }
+
+     document.getElementById("chargeBtn").addEventListener("click", async function () {
+         console.log("계좌 충전 요청");
+
+         let amountInput = prompt("후원 금액을 입력하세요 (최소 10,000원)");
+         if (!amountInput) {
+             return; // 입력 취소한 경우
+         }
+
+         // 입력받은 문자열을 숫자로 변환 후 유효성 체크
+         const amount = parseInt(amountInput, 10);
+         if (isNaN(amount) || amount < 10000) {
+             alert("최소 10,000원 이상의 금액을 입력해주세요.");
+             return;
+         }
+
+         const accessToken = localStorage.getItem("accessToken");
+         if (!accessToken) {
+             alert("로그인이 필요합니다.");
+             return;
+         }
+
+         const apiUrl = `/api/account`;
+         console.log(`충전 시작: ${apiUrl}`);
+
+         try {
+             const response = await fetch(apiUrl, {
+                 method: "POST",
+                 headers: {
+                     "Authorization": `Bearer ${accessToken}`,
+                     "Content-Type": "application/json"
+                 },
+                 body: JSON.stringify({ amount })
+             });
+
+             const result = await response.json();
+
+             if (response.ok) {
+                 alert("계좌 충전에 성공했습니다.");
+                 location.reload();
+             } else {
+                 alert("계좌 충전 실패: " + result.message);
+             }
+         } catch (error) {
+             console.error("충전 API 호출 오류:", error);
+             alert("계좌 충전 중 오류가 발생했습니다.");
+         }
+
+
+
+
+     });
+
 </script>
 
 </body>

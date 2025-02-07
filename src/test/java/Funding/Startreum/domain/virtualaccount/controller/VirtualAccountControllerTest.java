@@ -36,6 +36,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
+// TODO 수정 및 개선 필요
 @SpringBootTest
 @AutoConfigureMockMvc
 class VirtualAccountControllerTest {
@@ -265,7 +267,7 @@ class VirtualAccountControllerTest {
                 0, accountId, amount, amount, amount, LocalDateTime.now()
         );
 
-        given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
+        given(virtualAccountService.chargeByAccountId(eq(accountId), any(AccountRequest.class)))
                 .willReturn(response);
 
         // When
@@ -303,7 +305,7 @@ class VirtualAccountControllerTest {
                 0, accountId, amount, amount, amount, LocalDateTime.now()
         );
 
-        given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
+        given(virtualAccountService.chargeByAccountId(eq(accountId), any(AccountRequest.class)))
                 .willReturn(response);
 
         // When
@@ -337,7 +339,7 @@ class VirtualAccountControllerTest {
         // Given
         int accountId = 500;
 
-        given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
+        given(virtualAccountService.chargeByAccountId(eq(accountId), any(AccountRequest.class)))
                 .willThrow(new AccountNotFoundException(accountId));
         ;
 
@@ -375,7 +377,7 @@ class VirtualAccountControllerTest {
                 0, accountId, amount, amount, amount, LocalDateTime.now()
         );
 
-        given(virtualAccountService.charge(eq(accountId), any(AccountRequest.class)))
+        given(virtualAccountService.chargeByAccountId(eq(accountId), any(AccountRequest.class)))
                 .willReturn(response);
 
         // When

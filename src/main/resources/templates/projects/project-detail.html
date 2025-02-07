@@ -82,26 +82,31 @@
     async function processFunding(amount) {
         const accessToken = localStorage.getItem("accessToken");
         const projectId = window.location.pathname.split('/').pop();
+        console.log("후원 로직 시작");
+        // ${projectId}
+
 
         try {
-            const response = await fetch(`/api/funding/${projectId}`, {
+            const response = await fetch(`/api/account/payment`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${accessToken}`,
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ amount })
+                body: JSON.stringify({ projectId, amount })
             });
 
-            if (!response.ok) {
-                throw new Error("후원 요청 실패");
+            if (response.ok) {
+                const result = await response.json();
+                alert("결제에 성공했습니다.");
+                location.reload();
+            } else {
+                alert("결제에 실패했습니다 : " + result.message);
             }
-
-            alert("✅ 후원이 완료되었습니다!");
             location.reload(); // 후원 완료 후 새로고침
         } catch (error) {
-            console.error("후원 오류:", error);
-            alert("후원 중 문제가 발생했습니다.");
+            console.error("결제 오류:", error);
+            alert("결제 중 문제가 발생했습니다.");
         }
     }
 </script>
