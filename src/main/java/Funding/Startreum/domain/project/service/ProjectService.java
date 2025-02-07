@@ -35,6 +35,7 @@ public class ProjectService {
         //프로젝트 생성
         Project project = new Project();
         project.setCreator(user);
+        project.setSimpleDescription(projectCreateRequestDto.simpleDescription());  // 제목 밑 간단한 설명 추가
         project.setTitle(projectCreateRequestDto.title());
         project.setBannerUrl(projectCreateRequestDto.bannerUrl());
         project.setDescription(projectCreateRequestDto.description());

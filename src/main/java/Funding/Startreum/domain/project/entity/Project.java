@@ -31,6 +31,8 @@ public class Project {
 
     private String title; // 프로젝트 제목
 
+    private String simpleDescription;   // 제목 밑 간단한 설명
+
     private String bannerUrl; // 배너 이미지 URL
 
     @Lob

@@ -59,16 +59,16 @@ public class ProjectControllerTest {
     void setUp() {
         // ✅ 1. 테스트용 사용자 생성
         User user = new User();
-        user.setEmail("test@test.com");
+        user.setEmail("test123456@test.com");
         user.setPassword("password123"); // 비밀번호 암호화는 생략 (테스트 환경)
         user.setRole(User.Role.BENEFICIARY);
         user.setCreatedAt(LocalDateTime.now());  // createdAt 설정
         user.setUpdatedAt(LocalDateTime.now());  // updatedAt 설정
-        user.setName("testUser");
+        user.setName("testUser5");
         userRepository.save(user);
 
         // ✅ 2. JWT 토큰 생성
-        token = jwtUtil.generateAccessToken("testUser", "test@test.com", "BENEFICIARY");
+        token = jwtUtil.generateAccessToken("testUser5", "test123456@test.com", "BENEFICIARY");
         System.out.println("token: " + token);
 
         // ✅ 3. 테스트용 프로젝트 생성
@@ -91,6 +91,7 @@ public class ProjectControllerTest {
         // 프로젝트 생성 요청 DTO
         ProjectCreateRequestDto requestDto = new ProjectCreateRequestDto(
                 "Test Project", // title
+                "simple description",
                 "Description of test project", // description
                 new BigDecimal(100000), // fundingGoal
                 "https://example.com/banner.jpg", // bannerUrl
@@ -99,17 +100,17 @@ public class ProjectControllerTest {
         );
 
         // 프로젝트 생성 응답 DTO
-        ProjectCreateResponseDto responseDto = new ProjectCreateResponseDto(1, "Test Project", LocalDateTime.now());
+        ProjectCreateResponseDto responseDto = new ProjectCreateResponseDto(7, "Test Project", LocalDateTime.now());
 
         // ProjectService의 createProject 메서드가 호출될 때 responseDto를 반환하도록 설정
         BDDMockito.given(projectService.createProject(any(ProjectCreateRequestDto.class), any(String.class)))
                 .willReturn(responseDto);
 
         // 요청 보내기
-        ResultActions result = mockMvc.perform(post("/api/create/projects")
+        ResultActions result = mockMvc.perform(post("/api/beneficiary/create/projects")
                 .header("Authorization", "Bearer " + token)  // Authorization 헤더에 Bearer 토큰 추가
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"title\":\"Test Project\",\"description\":\"Description of test project\",\"fundingGoal\":100000,\"bannerUrl\":\"https://example.com/banner.jpg\",\"startDate\":\"2025-01-01T00:00:00\",\"endDate\":\"2025-02-01T00:00:00\"}"));
+                .content("{\"title\":\"Test Project\",\"simpleDescription\":\"simple description\",\"description\":\"Description of test project\",\"fundingGoal\":100000,\"bannerUrl\":\"https://example.com/banner.jpg\",\"startDate\":\"2025-01-01T00:00:00\",\"endDate\":\"2025-02-01T00:00:00\"}"));
 
         // 응답 검증
         result.andExpect(status().isCreated()); // 응답 코드가 201 Created이어야 함
