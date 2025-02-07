@@ -66,7 +66,7 @@ public class SecurityConfig {
 
                         // ✅ 인증 없이 접근 가능한 정적 리소스 및 공용 API
                         .requestMatchers("/", "/home", "/index.html").permitAll()
-                        .requestMatchers("/favicon.ico", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/favicon.ico", "/css/**", "/js/**", "/images/**", "/img/**").permitAll()
                         .requestMatchers("/api/users/signup", "/api/users/registrar", "/api/users/login", "/api/users/check-name", "/api/users/check-email").permitAll()
 
 
