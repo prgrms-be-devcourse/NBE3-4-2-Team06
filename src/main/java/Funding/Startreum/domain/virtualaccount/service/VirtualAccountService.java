@@ -88,43 +88,74 @@ public class VirtualAccountService {
     }
 
     /**
-     * 계좌 잔액을 충전합니다.
+     * 계좌를 충전합니다. (계좌 ID 기반)
      *
      * @param accountId 조회할 계좌 ID
      * @param request   잔액 정보가 담겨진 DTO
      * @return 충전 후 갱신된 계좌 정보 DTO
      */
     @Transactional
-    public AccountPaymentResponse charge(int accountId, AccountRequest request) {
-        // 1. 계좌 조회
+    public AccountPaymentResponse chargeByAccountId(int accountId, AccountRequest request) {
         VirtualAccount account = getAccount(accountId);
+        return chargeAccount(account, request);
+    }
 
-        // 2. 잔액 업데이트 로직
+    /**
+     * 계좌를 충전합니다. (username 기반)
+     *
+     * @param request 잔액 정보가 담겨진 DTO
+     * @return 충전 후 갱신된 계좌 정보 DTO
+     */
+    @Transactional
+    public AccountPaymentResponse chargeByUsername(String username, AccountRequest request) {
+        VirtualAccount account = getAccount(username);
+        return chargeAccount(account, request);
+    }
+
+    /**
+     * 계좌를 충전합니다.
+     *
+     * @param account 충전할 VirtualAccount 엔티티
+     * @param request 잔액 정보가 담긴 DTO
+     * @return 충전 후 갱신된 계좌 정보 DTO
+     */
+    private AccountPaymentResponse chargeAccount(VirtualAccount account, AccountRequest request) {
+        // 1. 잔액 업데이트
         BigDecimal beforeMoney = account.getBalance();
         account.setBalance(account.getBalance().add(request.amount()));
         virtualAccountRepository.save(account);
 
-        // 3. 거래 내역 생성
+        // 2. 거래 내역 생성 (여기서 첫번째 파라미터는 외부 전달용 ID로, null로 처리)
         Transaction transaction = createTransaction(null, account, account, request.amount(), REMITTANCE);
 
-        // 4. 응답 객체 생성 및 반환
+        // 3. 응답 객체 생성 및 반환
         return mapToAccountPaymentResponse(account, transaction, beforeMoney, request.amount());
     }
 
     /**
-     * 계좌를 조회합니다.
+     * 계좌를 조회합니다. (계좌 ID 기반)
      *
      * @param accountId 조회할 계좌 ID
      * @return 조회한 계좌를 반환합니다.
      */
-    @Transactional(readOnly = true)
     public VirtualAccount getAccount(int accountId) {
         return virtualAccountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
     }
 
     /**
-     * 계좌를 조회합니다.
+     * 계좌를 조회합니다. (username 기반)
+     *
+     * @param username 조회할 유저 ID
+     * @return 조회한 계좌를 반환합니다.
+     */
+    public VirtualAccount getAccount(String username) {
+        return virtualAccountRepository.findByUser_Name(username)
+                .orElseThrow(() -> new AccountNotFoundException(username));
+    }
+
+    /**
+     * 계좌를 조회합니다. (계좌 ID 기반)
      *
      * @param accountId 조회할 계좌 ID
      * @return 조회한 계좌의 정보 DTO를 반환합니다.
@@ -135,12 +166,23 @@ public class VirtualAccountService {
     }
 
     /**
-     * 결제를 진행하는 로직입니다.
+     * 계좌를 조회합니다. (username 기반)
      *
-     * @param accountId 결제할 사용자의 게좌 ID
-     * @param request   projectId과 결제 금액이 담겨져 있는 DTO
+     * @param username 현재 로그인한 유저의 이름
+     * @return 조회한 계좌의 정보 DTO를 반환합니다.
+     */
+    @Transactional(readOnly = true)
+    public AccountResponse getAccountInfo(String username) {
+        return FromOwnVirtualAccount(getAccount(username));
+    }
+
+    /**
+     * 결제를 진행하는 로직입니다. (계좌 ID 기반)
+     *
+     * @param accountId 결제할 사용자의 계좌 ID
+     * @param request   프로젝트 ID와 결제 금액이 담긴 DTO
      * @param username  결제할 사용자 이름
-     * @return 결제한 계좌의 정보 DTO를 반환합니다.
+     * @return 결제 후 갱신된 계좌 정보 DTO
      */
     @Transactional
     public AccountPaymentResponse payment(int accountId, AccountPaymentRequest request, String username) {
@@ -153,16 +195,58 @@ public class VirtualAccountService {
         VirtualAccount projectAccount = virtualAccountRepository.findBeneficiaryAccountByProjectId(request.projectId())
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
 
-        // 3. 결제 로직 - 계좌 잔액 업데이트 (payerAccount에서 금액 차감, projectAccount에 금액 추가)
+        // 3. 공통 결제 처리 로직 호출
+        return processPayment(project, payerAccount, projectAccount, request, username);
+    }
+
+    /**
+     * 결제를 진행하는 로직입니다. (username 기반)
+     *
+     * @param request  프로젝트 ID와 결제 금액이 담긴 DTO
+     * @param username 결제할 사용자 이름
+     * @return 결제 후 갱신된 계좌 정보 DTO
+     */
+    @Transactional
+    public AccountPaymentResponse payment(AccountPaymentRequest request, String username) {
+        // 1. 프로젝트 조회
+        Project project = projectRepository.findById(request.projectId())
+                .orElseThrow(() -> new EntityNotFoundException("프로젝트를 찾을 수 없습니다. 프로젝트 ID: " + request.projectId()));
+
+        // 2. 계좌 조회
+        VirtualAccount payerAccount = getAccount(username);
+        VirtualAccount projectAccount = virtualAccountRepository.findBeneficiaryAccountByProjectId(request.projectId())
+                .orElseThrow(() -> new AccountNotFoundException(request.projectId()));
+
+        // 3. 공통 결제 처리 로직 호출
+        return processPayment(project, payerAccount, projectAccount, request, username);
+    }
+
+    /**
+     * 공통 결제 처리 로직입니다.
+     *
+     * @param project        결제 대상 프로젝트
+     * @param payerAccount   결제자 계좌
+     * @param projectAccount 프로젝트 계좌 (수혜자 계좌)
+     * @param request        결제 정보 DTO
+     * @param username       결제자 사용자 이름
+     * @return 결제 후 갱신된 계좌 정보 DTO
+     */
+    private AccountPaymentResponse processPayment(Project project, VirtualAccount payerAccount,
+                                                  VirtualAccount projectAccount, AccountPaymentRequest request, String username) {
+        // 1. 계좌 잔액 업데이트 (결제자 계좌에서 차감, 프로젝트 계좌에 추가)
         BigDecimal payerBalanceBefore = payerAccount.getBalance();
         BigDecimal paymentAmount = request.amount();
-        processAccountPayment(payerBalanceBefore, paymentAmount, payerAccount, projectAccount);
+        processAccountPayment(paymentAmount, payerAccount, projectAccount);
 
-        // 4. 펀딩 및 거래 내역 저장
+        // 2. 프로젝트 목표액 업데이트
+        project.setCurrentFunding(project.getCurrentFunding().add(paymentAmount));
+        projectRepository.save(project);
+
+        // 3. 펀딩 및 거래 내역 저장
         Funding funding = createFunding(project, username, paymentAmount);
         Transaction transaction = createTransaction(funding, payerAccount, projectAccount, paymentAmount, REMITTANCE);
 
-        // 5. 응답 객체 생성 및 반환 (결제 후 결제자 계좌 정보를 기준)
+        // 4. 응답 객체 생성 및 반환
         return mapToAccountPaymentResponse(payerAccount, transaction, payerBalanceBefore, paymentAmount);
     }
 
@@ -212,7 +296,7 @@ public class VirtualAccountService {
         // 3. 환불 로직 - 계좌 잔액 업데이트 (projectAccount에서 환불 금액 차감, payerAccount에 추가)
         BigDecimal beforeMoney = payerAccount.getBalance();
         BigDecimal refundAmount = oldTransaction.getAmount();
-        processAccountPayment(beforeMoney, refundAmount, projectAccount, payerAccount);
+        processAccountPayment(refundAmount, projectAccount, payerAccount);
 
         // 4. 펀딩 취소 및 환불 거래 내역 저장
         Funding funding = cancelFunding(oldTransaction.getFunding().getFundingId());
@@ -241,17 +325,16 @@ public class VirtualAccountService {
     /**
      * 결제 또는 환불 시 계좌 잔액 업데이트를 진행합니다.
      *
-     * @param sourceBalance 결제(또는 환불) 전 출금 계좌의 잔액
      * @param amount        거래 금액
      * @param sourceAccount 출금(또는 환불 출금) 계좌
      * @param targetAccount 입금(또는 환불 입금) 계좌
      * @throws RuntimeException 잔액이 부족할 경우 예외 발생
      */
-    private void processAccountPayment(BigDecimal sourceBalance, BigDecimal amount, VirtualAccount sourceAccount, VirtualAccount targetAccount) {
-        if (sourceBalance.compareTo(amount) < 0) {
-            throw new NotEnoughBalanceException(sourceBalance);
+    private void processAccountPayment(BigDecimal amount, VirtualAccount sourceAccount, VirtualAccount targetAccount) {
+        if (sourceAccount.getBalance().compareTo(amount) < 0) {
+            throw new NotEnoughBalanceException(sourceAccount.getBalance());
         }
-        sourceAccount.setBalance(sourceBalance.subtract(amount));
+        sourceAccount.setBalance(sourceAccount.getBalance().subtract(amount));
         virtualAccountRepository.save(sourceAccount);
         targetAccount.setBalance(targetAccount.getBalance().add(amount));
         virtualAccountRepository.save(targetAccount);

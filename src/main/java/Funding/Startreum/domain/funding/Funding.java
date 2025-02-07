@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"project", "sponsor"}) // 순환 참조 방지
 @Entity
 @Table(name = "funding")
 public class Funding {

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public class VirtualAccountDtos {
 
+    private Integer accountId;
     private boolean accountExists; // 계좌 존재 여부
     private String username; // 사용자 이름
     private BigDecimal balance; // 잔액
@@ -25,6 +26,7 @@ public class VirtualAccountDtos {
     }
 
     public VirtualAccountDtos(VirtualAccount account) {
+        this.accountId = account.getAccountId();
         this.accountExists = true;
         this.username = account.getUser().getName();
         this.balance = account.getBalance();
@@ -34,6 +36,7 @@ public class VirtualAccountDtos {
 
     public static VirtualAccountDtos fromEntity(VirtualAccount account) {
         return VirtualAccountDtos.builder()
+                .accountId(account.getAccountId())
                 .accountExists(true)
                 .username(account.getUser().getName())
                 .balance(account.getBalance())

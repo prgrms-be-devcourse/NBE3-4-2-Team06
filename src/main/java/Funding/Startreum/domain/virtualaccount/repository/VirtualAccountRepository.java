@@ -19,8 +19,15 @@ public interface VirtualAccountRepository extends JpaRepository<VirtualAccount, 
     Optional<VirtualAccount> findBeneficiaryAccountByProjectId(@Param("projectId") Integer projectId);
 
     @Query("SELECT va FROM VirtualAccount va " +
+            "JOIN va.user u " +
+            "WHERE u.name = :username")
+    Optional<VirtualAccount> findBeneficiaryAccountByUser_Name(@Param("username") String username);
+
+    @Query("SELECT va FROM VirtualAccount va " +
             "JOIN Transaction t ON t.receiverAccount = va " +
             "WHERE t.transactionId = :transactionId")
     Optional<VirtualAccount> findReceiverAccountByTransactionId(@Param("transactionId") Integer transactionId);
+
+    Optional<VirtualAccount> findByUser_Name(String userName);
 }
     
