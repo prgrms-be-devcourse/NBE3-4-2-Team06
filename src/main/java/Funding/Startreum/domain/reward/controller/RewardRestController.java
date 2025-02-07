@@ -8,6 +8,7 @@ import Funding.Startreum.domain.reward.dto.response.RewardResponse;
 import Funding.Startreum.domain.reward.service.RewardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,6 +41,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reward")
+@Slf4j
 public class RewardRestController {
 
     private final RewardService service;
@@ -61,7 +63,9 @@ public class RewardRestController {
     public ResponseEntity<?> createReward(
             @RequestBody @Valid RewardRequest request
     ) {
+        log.debug("프로젝트 ID {}에 리워드를 생성합니다.", request.projectId());
         RewardResponse response = service.generateNewRewardResponse(request);
+        log.debug("프로젝트 ID {}에 리워드 생성에 성공했습니다..", request.projectId());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success("리워드 생성에 성공했습니다.", response));
@@ -83,7 +87,9 @@ public class RewardRestController {
     public ResponseEntity<?> getRewardByProjectId(
             @PathVariable(name = "projectId") int projectId
     ) {
+        log.debug("프로젝트 ID {}에 있는 리워드를 조회합니다.", projectId);
         List<RewardResponse> response = service.generateRewardsResponse(projectId);
+        log.debug("프로젝트 ID {}에 있는 리워드 조회에 성공했습니다.", projectId);
 
         if (response.isEmpty()) {
             return ResponseEntity.ok(ApiResponse.success("리워드가 존재하지 않습니다.", response));
@@ -112,7 +118,9 @@ public class RewardRestController {
             @PathVariable("rewardId") int rewardId,
             @Valid @RequestBody RewardUpdateRequest request
     ) {
+        log.debug("리워드 ID {}에 있는 내역을 수정합니다. ", rewardId);
         RewardResponse response = service.generateUpdatedRewardResponse(rewardId, request);
+        log.debug("리워드 ID {}에 있는 내역을 수정에 성공했습니다.", rewardId);
         return ResponseEntity.ok(ApiResponse.success("리워드 수정에 성공했습니다.", response));
     }
 
@@ -133,7 +141,9 @@ public class RewardRestController {
     public ResponseEntity<?> deleteReward(
             @PathVariable("rewardId") int rewardId
     ) {
+        log.debug("리워드 ID {}를 삭제합니다.", rewardId);
         service.deleteReward(rewardId);
+        log.debug("리워드 ID {} 삭제에 완료했습니다.", rewardId);
         return ResponseEntity.ok(ApiResponse.success("리워드 삭제에 성공했습니다."));
     }
 }
