@@ -27,7 +27,6 @@
 </div>
 
 
-<!-- TODO : 담당자 - 한상훈 : 후원 결제 로직 구현 -->
 <script>
     let userRole = ""; // 사용자 역할 저장
 
@@ -98,10 +97,10 @@
 
             if (response.ok) {
                 const result = await response.json();
-                alert("결제에 성공했습니다.");
+                alert(result.message);
                 location.reload();
             } else {
-                alert("결제에 실패했습니다 : " + result.message);
+                alert(result.message);
             }
             location.reload(); // 후원 완료 후 새로고침
         } catch (error) {

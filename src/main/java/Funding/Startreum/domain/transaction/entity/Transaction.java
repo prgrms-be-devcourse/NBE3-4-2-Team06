@@ -23,26 +23,29 @@ public class Transaction {
     private Integer transactionId; // 거래 고유 ID
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "funding_id")
+    @JoinColumn(name = "funding_id", updatable = false, nullable = false)
     private Funding funding; // 펀딩 ID
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_id")
+    @JoinColumn(name = "admin_id", updatable = false)
     private User admin; // 관리자 ID
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_account_id", nullable = false)
+    @JoinColumn(name = "sender_account_id", updatable = false,  nullable = false)
     private VirtualAccount senderAccount; // 송신 계좌
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receiver_account_id", nullable = false)
+    @JoinColumn(name = "receiver_account_id", updatable = false, nullable = false)
     private VirtualAccount receiverAccount; // 수신 계좌
 
+    @Column(updatable = false, nullable = false)
     private BigDecimal amount; // 거래 금액
 
     @Enumerated(EnumType.STRING)
+    @Column(updatable = false, nullable = false)
     private TransactionType type; // 거래 유형
 
+    @Column(updatable = false, nullable = false)
     private LocalDateTime transactionDate; // 거래 일자
 
     public enum TransactionType {

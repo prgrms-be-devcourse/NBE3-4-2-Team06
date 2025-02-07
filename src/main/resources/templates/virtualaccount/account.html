@@ -141,8 +141,8 @@
 
          // 입력받은 문자열을 숫자로 변환 후 유효성 체크
          const amount = parseInt(amountInput, 10);
-         if (isNaN(amount) || amount < 10000) {
-             alert("최소 10,000원 이상의 금액을 입력해주세요.");
+         if (isNaN(amount) || amount < 1000) {
+             alert("최소 10,00원 이상의 금액을 입력해주세요.");
              return;
          }
 
