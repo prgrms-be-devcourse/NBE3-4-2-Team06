@@ -23,7 +23,7 @@ public class Transaction {
     private Integer transactionId; // 거래 고유 ID
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "funding_id", updatable = false, nullable = false)
+    @JoinColumn(name = "funding_id", updatable = false)
     private Funding funding; // 펀딩 ID
 
     @ManyToOne(fetch = FetchType.LAZY)
