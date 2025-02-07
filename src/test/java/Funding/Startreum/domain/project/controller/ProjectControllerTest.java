@@ -59,16 +59,16 @@ public class ProjectControllerTest {
     void setUp() {
         // ✅ 1. 테스트용 사용자 생성
         User user = new User();
-        user.setEmail("test123456@test.com");
+        user.setEmail("test1234567@test.com");
         user.setPassword("password123"); // 비밀번호 암호화는 생략 (테스트 환경)
         user.setRole(User.Role.BENEFICIARY);
         user.setCreatedAt(LocalDateTime.now());  // createdAt 설정
         user.setUpdatedAt(LocalDateTime.now());  // updatedAt 설정
-        user.setName("testUser5");
+        user.setName("testUser6");
         userRepository.save(user);
 
         // ✅ 2. JWT 토큰 생성
-        token = jwtUtil.generateAccessToken("testUser5", "test123456@test.com", "BENEFICIARY");
+        token = jwtUtil.generateAccessToken("testUser6", "test1234567@test.com", "BENEFICIARY");
         System.out.println("token: " + token);
 
         // ✅ 3. 테스트용 프로젝트 생성
@@ -79,6 +79,7 @@ public class ProjectControllerTest {
         project.setStartDate(LocalDateTime.of(2025, 2, 1, 0, 0));
         project.setEndDate(LocalDateTime.of(2025, 3, 1, 0, 0));
         project.setCreator(user);
+        project.setSimpleDescription("간단한 설명");
         projectRepository.save(project);
         System.out.println(project.getCreator().getUserId());
 
@@ -100,7 +101,7 @@ public class ProjectControllerTest {
         );
 
         // 프로젝트 생성 응답 DTO
-        ProjectCreateResponseDto responseDto = new ProjectCreateResponseDto(7, "Test Project", LocalDateTime.now());
+        ProjectCreateResponseDto responseDto = new ProjectCreateResponseDto(8, "Test Project", LocalDateTime.now());
 
         // ProjectService의 createProject 메서드가 호출될 때 responseDto를 반환하도록 설정
         BDDMockito.given(projectService.createProject(any(ProjectCreateRequestDto.class), any(String.class)))
