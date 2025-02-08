@@ -1,26 +1,26 @@
 window.onload = function () {
     const authButtons = document.querySelector("#auth-buttons");
-    const beneficiaryActions = document.querySelector("#beneficiary-actions"); // "생성하기" 버튼이 들어갈 영역
-
+    const beneficiaryActions = document.querySelector("#beneficiary-actions"); 
+    const startProjectButton = document.querySelector("#start-project-btn"); 
 
     if (!authButtons) {
-        console.error(" auth-buttons 요소를 찾을 수 없습니다.");
+        console.error("auth-buttons 요소를 찾을 수 없습니다.");
         return;
     }
 
     const accessToken = localStorage.getItem("accessToken");
+    let userRole = null;  
 
     console.log("🔹 토큰 존재 여부:", accessToken ? "있음" : "없음");
 
     if (accessToken) {
         try {
             const tokenPayload = JSON.parse(atob(accessToken.split(".")[1]));
-            const userName = tokenPayload.sub || "알 수 없음";  // subject(name)
-            const userRole = tokenPayload.role || "역할 없음"; // role 추출
+            const userName = tokenPayload.sub || "알 수 없음";
+            userRole = tokenPayload.role || "역할 없음"; 
 
-            console.log(" 로그인 된 사용자:", userName, "역할:", userRole);
+            console.log("로그인 된 사용자:", userName, "역할:", userRole);
 
-            //  역할을 한글로 변환
             const roleTranslation = {
                 "ROLE_BENEFICIARY": "수혜자",
                 "ROLE_SPONSOR": "후원자",
@@ -29,39 +29,38 @@ window.onload = function () {
 
             const translatedRole = roleTranslation[userRole] || "알 수 없는 역할";
 
-          //  로그인 상태일 때: 사용자 이름 & 로그아웃 버튼 표시
-                    authButtons.innerHTML = `
-                        <span class="fw-bold text-primary">${userName} (${translatedRole})님</span>
-                        <a href="/profile/${userName}" class="btn btn-outline-primary">내 정보</a>
-                        ${userRole === "ROLE_ADMIN" ? `<a href="/admin" class="btn btn-warning">관리자</a>` : ""}
-                        <button id="logout-button" class="btn btn-danger">로그아웃</button>
-                    `;
+            // 로그인 상태일 때 사용자 정보 표시
+            authButtons.innerHTML = `
+                <span class="user-name">${userName} (${translatedRole})님</span>
+                <a href="/profile/${userName}" class="custom-btn">내 정보</a>
+                ${userRole === "ROLE_ADMIN" ? `<a href="/admin" class="custom-btn primary">관리자</a>` : ""}
+                <button id="logout-button" class="custom-btn">로그아웃</button>
+            `;
 
-        // ✅ 수혜자(ROLE_BENEFICIARY)일 경우 "생성하기" 버튼 추가
             if (userRole === "ROLE_BENEFICIARY" && beneficiaryActions) {
                 beneficiaryActions.innerHTML = `
-                    <button class="btn btn-success btn-lg" onclick="location.href='/projects/new'">
+                    <button class="custom-btn primary" onclick="location.href='/projects/new'">
                         생성하기
                     </button>
                 `;
             }
 
+            document.getElementById("logout-button").addEventListener("click", logout);
 
-        // ✅ 수혜자(ROLE_BENEFICIARY)일 경우 "생성하기" 버튼 추가
-            if (userRole === "ROLE_BENEFICIARY" && beneficiaryActions) {
-                beneficiaryActions.innerHTML = `
-                    <button class="btn btn-success btn-lg" onclick="location.href='/projects/new'">
-                        생성하기
-                    </button>
-                `;
-            }
-
-
-       // ✅ 로그아웃 버튼에 이벤트 리스너 추가
-       document.getElementById("logout-button").addEventListener("click", logout);
         } catch (error) {
-            console.error(" JWT 디코딩 오류:", error);
+            console.error("JWT 디코딩 오류:", error);
         }
+    }
+
+    if (startProjectButton) {
+        startProjectButton.addEventListener("click", function (event) {
+            if (userRole === "ROLE_BENEFICIARY") {
+                window.location.href = "/projects/new";
+            } else {
+                event.preventDefault(); 
+                alert("이 기능은 수혜자만 사용할 수 있습니다.");
+            }
+        });
     }
 };
 
@@ -69,7 +68,6 @@ async function logout() {
     console.log("🔹 로그아웃 요청 중...");
 
     try {
-        // ✅ 서버에 로그아웃 요청 보내기
         const response = await fetch("/api/users/logout", {
             method: "POST",
             headers: { "Content-Type": "application/json" }
@@ -81,11 +79,9 @@ async function logout() {
 
         console.log("✅ 서버 로그아웃 완료");
 
-        // ✅ 클라이언트에서 토큰 삭제
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
 
-        // ✅ 로그아웃 후 로그인 페이지로 리디렉션
         window.location.href = "/api/users/login";
     } catch (error) {
         console.error("❌ 로그아웃 오류:", error);

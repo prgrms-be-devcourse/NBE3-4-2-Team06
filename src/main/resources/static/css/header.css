@@ -1,71 +1,118 @@
-:root {
-    --header-height: 100px;
-}
-
-/* 헤더 스타일 */
-header {
+/* Custom Header Styles */
+.custom-header {
     height: var(--header-height);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0);  /* 완전 투명 */
     padding: 10px 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 0px; /* 헤더 아래 여백 제거 */
+    box-shadow: none;  /* 그림자 제거 */
+    position: absolute;  /* 배경 위로 배치 */
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 3;
 }
 
-/* 내부 요소 정렬 */
-header .container {
+/* 기본 로고 색상 (검은색) */
+.logo {
+    color: #000000 !important;
+}
+/* Logo Section */
+.logo {
+    position: absolute;
+    left: 30px;
+    top: 20px;
+    font-size: 40px;
+    color: #FFFFFF;
+    font-family: 'Jersey 25', sans-serif;
+    font-weight: bold;
+    z-index: 2;
+}
+/* 메인 페이지에서 로고 색상 (흰색) */
+.main-page .logo {
+    color: #FFFFFF !important;
+}
+
+/* 메인 페이지 외 모든 페이지에서 헤더는 투명 유지 */
+body:not(.main-page) .custom-header {
+    background: rgba(255, 255, 255, 0);  /* 투명 배경 유지 */
+    box-shadow: none;  /* 그림자 제거 */
+    position: absolute;  /* 배경 위로 배치 */
+}
+
+/* Container Styles */
+.custom-container {
     display: flex;
-    width: 100%;
-    max-width: 1200px;
-    margin: auto;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: nowrap; /* 줄바꿈 방지 */
+    width: 100%;
+    padding: 10px;
 }
 
-/* 사용자 정보 줄바꿈 방지 */
-header .user-info {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 180px;
-}
-
-/* 버튼 컨테이너 */
-header .d-flex {
+/* Logo Styles */
+.logo-container {
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex-wrap: nowrap;
 }
 
-/* 버튼 스타일 */
-header .btn {
-    margin: 0 5px;
-    padding: 5px 12px;
+.logo-link {
+    text-decoration: none;
 }
 
-/* 반응형 */
+/* Auth Button Styles */
+.auth-buttons {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.user-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #555555;  /* 진한 회색 텍스트 */
+    margin-right: 15px;
+}
+
+.custom-btn {
+    padding: 10px 20px;
+    background: #7D4988;
+    border-radius: 16px;
+    color: #FFFFFF;
+    text-decoration: none;
+    font-size: 1.2vw;
+}
+
+.custom-btn.primary, .custom-btn.logout {
+    background: rgba(125, 73, 136, 1);
+}
+
+/* Button Hover Effects */
+.custom-btn:hover {
+    background: rgba(125, 73, 136, 1);  /* 호버 시 더 진한 색 */
+    transform: scale(1.05);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-    header {
+    .custom-header {
+        flex-direction: column;
         height: auto;
     }
 
-    header .container {
+    .auth-buttons {
         flex-direction: column;
+        gap: 10px;
+    }
+
+    .custom-btn {
+        width: 100%;
         text-align: center;
     }
 
-    header .d-flex {
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    header .btn {
-        width: 100px;
-        font-size: 14px;
-        padding: 4px 8px;
+    .user-name {
+        margin-right: 0;
+        margin-bottom: 10px;
     }
 }
