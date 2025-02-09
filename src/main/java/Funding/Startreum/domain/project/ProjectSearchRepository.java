@@ -45,6 +45,4 @@ public interface ProjectSearchRepository extends JpaRepository<Project, Integer>
      */
     @Query("SELECT p FROM Project p WHERE p.isApproved = 'APPROVE'")
     Page<Project> findAllApproved(Pageable pageable);
-
-
 }

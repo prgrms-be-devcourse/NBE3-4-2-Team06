@@ -123,7 +123,6 @@ public class VirtualAccountService {
         // 1. 잔액 업데이트
         BigDecimal beforeMoney = account.getBalance();
         account.setBalance(account.getBalance().add(request.amount()));
-        // virtualAccountRepository.save(account);
 
         // 2. 거래 내역 생성 (여기서 첫번째 파라미터는 외부 전달용 ID로, null로 처리)
         Transaction transaction = createTransaction(null, account, account, request.amount(), REMITTANCE);
@@ -240,7 +239,6 @@ public class VirtualAccountService {
 
         // 2. 프로젝트 목표액 업데이트
         project.setCurrentFunding(project.getCurrentFunding().add(paymentAmount));
-        // projectRepository.save(project);
 
         // 3. 펀딩 및 거래 내역 저장
         Funding funding = createFunding(project, username, paymentAmount);
@@ -302,8 +300,9 @@ public class VirtualAccountService {
         Funding funding = cancelFunding(oldTransaction.getFunding().getFundingId());
         Transaction newTransaction = createTransaction(funding, projectAccount, payerAccount, refundAmount, REFUND);
 
-        // TODO 프로젝트 current_funding 업데이트 안됨, 차감 되게 할 것
-
+        // TODO 프로젝트 current_funding 업데이트 안됨, 차감되게 할 것
+        Project project = projectRepository.findProjectByTransactionId(transactionId);
+        project.setCurrentFunding(project.getCurrentFunding().subtract(refundAmount));
 
         // 5. 응답 객체 생성 및 반환 (환불 후 결제자 계좌 정보를 기준)
         return mapToAccountRefundResponse(payerAccount, newTransaction, transactionId, refundAmount, beforeMoney);
@@ -338,9 +337,7 @@ public class VirtualAccountService {
             throw new NotEnoughBalanceException(sourceAccount.getBalance());
         }
         sourceAccount.setBalance(sourceAccount.getBalance().subtract(amount));
-        // virtualAccountRepository.save(sourceAccount);
         targetAccount.setBalance(targetAccount.getBalance().add(amount));
-        // virtualAccountRepository.save(targetAccount);
     }
 
     /**
