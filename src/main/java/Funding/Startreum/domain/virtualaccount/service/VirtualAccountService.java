@@ -37,6 +37,7 @@ import static Funding.Startreum.domain.virtualaccount.dto.response.AccountPaymen
 import static Funding.Startreum.domain.virtualaccount.dto.response.AccountRefundResponse.mapToAccountRefundResponse;
 import static Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse.FromOwnVirtualAccount;
 
+// TODO 도메인 분리 작업 필요
 @Service
 @RequiredArgsConstructor
 public class VirtualAccountService {
