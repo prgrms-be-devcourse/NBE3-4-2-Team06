@@ -6,7 +6,7 @@ import Funding.Startreum.domain.funding.service.FundingService;
 import Funding.Startreum.domain.project.entity.Project;
 import Funding.Startreum.domain.project.repository.ProjectRepository;
 import Funding.Startreum.domain.project.service.ProjectService;
-import Funding.Startreum.domain.reward.RewardRepository;
+import Funding.Startreum.domain.reward.repository.RewardRepository;
 import Funding.Startreum.domain.transaction.entity.Transaction;
 import Funding.Startreum.domain.transaction.repository.TransactionRepository;
 import Funding.Startreum.domain.transaction.service.TransactionService;
