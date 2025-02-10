@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public record ProjectCreateRequestDto(
         @NotNull String title,
+        @NotNull String simpleDescription,
         String description,
         @NotNull BigDecimal fundingGoal,
         @NotNull String bannerUrl,

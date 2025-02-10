@@ -20,6 +20,9 @@
       <label for="title">프로젝트 제목:</label>
       <input type="text" id="title" name="title" required>
 
+      <label for="simpleDescription">간단한 설명:</label>
+      <input type="text" id="simpleDescription" name="simpleDescription" required>
+
       <label for="description">설명:</label>
       <textarea id="description" name="description"></textarea>
 
@@ -64,6 +67,7 @@
     // 사용자 입력 데이터 가져오기
     const projectData = {
       title: document.getElementById("title").value,
+      simpleDescription: document.getElementById("simpleDescription").value,
       description: document.getElementById("description").value,
       fundingGoal: parseFloat(document.getElementById("fundingGoal").value), // 숫자로 변환
       bannerUrl: document.getElementById("bannerUrl").value,
