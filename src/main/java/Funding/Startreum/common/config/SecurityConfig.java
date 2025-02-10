@@ -49,7 +49,6 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ✅ 세션 비활성화 (JWT 사용)
                 .authorizeHttpRequests(authorize -> authorize
 
-
                         // ✅ 프로젝트 생성 API는 수혜자(ROLE_BENEFICIARY)만 접근 가능하도록 설정
                         .requestMatchers(HttpMethod.POST, "/api/beneficiary/create/projects").hasRole("BENEFICIARY")
                         .requestMatchers(HttpMethod.GET, "/projects/new").permitAll()
@@ -63,20 +62,17 @@ public class SecurityConfig {
                         // ✅ 프로젝트 상세 페이지(View)는 인증 없이 접근 가능
                         .requestMatchers(HttpMethod.GET, "/projects/{projectId}").permitAll()
 
-
                         // ✅ 인증 없이 접근 가능한 정적 리소스 및 공용 API
                         .requestMatchers("/", "/home", "/index.html").permitAll()
                         .requestMatchers("/favicon.ico", "/css/**", "/js/**", "/images/**", "/img/**").permitAll()
                         .requestMatchers("/api/users/signup", "/api/users/registrar", "/api/users/login", "/api/users/check-name", "/api/users/check-email").permitAll()
 
-
-                        // ✅ HTML 페이지는 누구나 접근 가능 (관리자 뷰 페이지)
+                        // ✅ HTML 페이지는 누군의 가 접근 가능 (관리자 뷰 페이지)
                         .requestMatchers("/admin").permitAll()
                         // ✅ 관리자 전용 API는 ROLE_ADMIN 필요
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
 
                         .requestMatchers("/admin/project").permitAll()
-
 
                         .requestMatchers("/profile/{name}").permitAll()  // ✅ 프로필 뷰는 인증 없이 접근 가능
                         .requestMatchers("/profile/modify/{name}").permitAll() // ✅ 프로필 수정 뷰도 인증 없이 접근 가능
@@ -100,10 +96,9 @@ public class SecurityConfig {
                             Authentication authentication = authenticationSupplier.get();
                             String requestURI = context.getRequest().getRequestURI();
 
-                            // 🔍 요청된 사용자 이름 추출
+                            // 호출된 사용자 이름 추출
                             String[] parts = requestURI.split("/"); // /api/account/user/{name}/create 형태
                             String pathUsername = parts[parts.length - 2]; // {name} 위치
-
 
                             return new AuthorizationDecision(authentication.getName().equals(pathUsername));  // ✅ 본인만 계좌 생성 가능
                         })
@@ -112,7 +107,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
-                .formLogin(AbstractHttpConfigurer::disable) // 기본 로그인 폼 비활성화 (Spring이 가로채지 않도록)
+                .formLogin(AbstractHttpConfigurer::disable) // 기본 로그인 포너 비활성화 (Spring이 가로찌지 않도록)
                 .logout(logout -> logout
                         .logoutUrl("/api/users/logout") // ✅ 로그아웃 URL
                         .logoutSuccessHandler((request, response, authentication) -> {
@@ -137,7 +132,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:9090")); // 허용할 도메인 추가
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); //  Authorization 헤더 추가
+        configuration.setAllowedHeaders(List.of("*")); //  모든 헤더 허용
         configuration.setExposedHeaders(List.of("Authorization")); //  클라이언트가 Authorization 헤더 접근 가능하게
 
         configuration.setAllowCredentials(true);
