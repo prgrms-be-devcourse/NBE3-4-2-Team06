@@ -28,13 +28,12 @@
                     <div class="project-date"><span id="startDate"></span> ~ <span id="endDate"></span></div>
                 </div>
             </div>
-            <div class="project-support-button" onclick="openFundingModal()">후원 하기</div>
+            <button class="project-support-button" onclick="openFundingModal()">후원 하기</button>
         </div>
     </div>
 
     <!-- 상세 설명을 복사하기 위한 영역 -->
     <div class="project-description-box">
-
         <p id="projectDescription"></p>
     </div>
 
@@ -46,14 +45,16 @@
     <div class="project-comments-section">
         <h3>댓글</h3>
         <div class="project-write-comment">
-            <textarea placeholder="150자 내외로 작성하세요."></textarea>
-            <button>등록</button>
+            <textarea id="commentInput" placeholder="150자 내외로 작성하세요."></textarea>
+            <button onclick="addComment()">등록</button>
         </div>
         <div id="commentsList"></div> <!-- 댓글 목록은 여기에 추가 -->
     </div>
 </div>
 
 <script>
+    let userRole = "";  // 전역 변수로 선언
+
     document.addEventListener('DOMContentLoaded', function () {
         let projectId = window.location.pathname.split('/').pop();
         let apiUrl = `/api/projects/${projectId}`;
@@ -74,15 +75,14 @@
             })
             .catch(error => {
                 console.error("프로젝트 상세 불러오기 오류:", error);
-                alert("프로젝트 정보를 불로오는 중 오류가 발생했습니다.");
+                alert("프로젝트 정보를 불러오는 중 오류가 발생했습니다.");
             });
 
         const accessToken = localStorage.getItem("accessToken");
         if (accessToken) {
             try {
                 const tokenPayload = JSON.parse(atob(accessToken.split(".")[1]));
-                document.getElementById("userName").innerText = `${tokenPayload.username} 님 환영합니다.`;
-                document.getElementById("userRole").innerText = tokenPayload.role || "";
+                userRole = tokenPayload.role || "";
             } catch (error) {
                 console.error("JWT 디코딩 오류:", error);
             }
@@ -125,13 +125,12 @@
     }
 
     function deleteComment(button) {
-        if (confirm("댓글를 삭제하시겠습니꼴")) {
+        if (confirm("댓글을 삭제하시겠습니까?")) {
             button.closest(".comment").remove();
         }
     }
 
     function openFundingModal() {
-        const userRole = document.getElementById("userRole").innerText;
         if (userRole !== "ROLE_SPONSOR") {
             alert("❌ 후원자는 ROLE_SPONSOR 사용자만 가능합니다.");
             return;
