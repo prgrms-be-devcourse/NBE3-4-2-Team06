@@ -1,6 +1,6 @@
 package Funding.Startreum.domain.admin;
 
-import Funding.Startreum.domain.funding.Funding;
+import Funding.Startreum.domain.funding.entity.Funding;
 import Funding.Startreum.domain.project.entity.Project;
 import Funding.Startreum.domain.transaction.entity.Transaction;
 import Funding.Startreum.domain.transaction.repository.TransactionRepository;

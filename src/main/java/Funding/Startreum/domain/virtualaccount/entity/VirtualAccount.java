@@ -27,6 +27,7 @@ public class VirtualAccount {
     @Column(nullable = false, precision = 18, scale = 0) // 정수만 저장
     private BigDecimal balance; // 현재 잔액
 
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt; // 계좌 생성 일자
 
     private LocalDateTime updatedAt; // 계좌 업데이트 일자

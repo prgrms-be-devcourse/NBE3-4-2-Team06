@@ -1,16 +1,16 @@
 package Funding.Startreum.domain.virtualaccount.service;
 
 
-import Funding.Startreum.domain.funding.Funding;
-import Funding.Startreum.domain.funding.FundingRepository;
+import Funding.Startreum.domain.funding.entity.Funding;
+import Funding.Startreum.domain.funding.service.FundingService;
 import Funding.Startreum.domain.project.entity.Project;
 import Funding.Startreum.domain.project.repository.ProjectRepository;
-import Funding.Startreum.domain.reward.RewardRepository;
+import Funding.Startreum.domain.project.service.ProjectService;
 import Funding.Startreum.domain.transaction.entity.Transaction;
 import Funding.Startreum.domain.transaction.repository.TransactionRepository;
+import Funding.Startreum.domain.transaction.service.TransactionService;
 import Funding.Startreum.domain.users.User;
 import Funding.Startreum.domain.users.UserRepository;
-import Funding.Startreum.domain.users.UserService;
 import Funding.Startreum.domain.virtualaccount.dto.VirtualAccountDtos;
 import Funding.Startreum.domain.virtualaccount.dto.request.AccountPaymentRequest;
 import Funding.Startreum.domain.virtualaccount.dto.request.AccountRequest;
@@ -19,11 +19,9 @@ import Funding.Startreum.domain.virtualaccount.dto.response.AccountRefundRespons
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse;
 import Funding.Startreum.domain.virtualaccount.entity.VirtualAccount;
 import Funding.Startreum.domain.virtualaccount.exception.AccountNotFoundException;
-import Funding.Startreum.domain.virtualaccount.exception.FundingNotFoundException;
 import Funding.Startreum.domain.virtualaccount.exception.NotEnoughBalanceException;
 import Funding.Startreum.domain.virtualaccount.exception.TransactionNotFoundException;
 import Funding.Startreum.domain.virtualaccount.repository.VirtualAccountRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,8 +33,9 @@ import static Funding.Startreum.domain.transaction.entity.Transaction.Transactio
 import static Funding.Startreum.domain.transaction.entity.Transaction.TransactionType.REMITTANCE;
 import static Funding.Startreum.domain.virtualaccount.dto.response.AccountPaymentResponse.mapToAccountPaymentResponse;
 import static Funding.Startreum.domain.virtualaccount.dto.response.AccountRefundResponse.mapToAccountRefundResponse;
-import static Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse.FromOwnVirtualAccount;
+import static Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse.mapToAccountResponse;
 
+// TODO 도메인 분리 작업 필요
 @Service
 @RequiredArgsConstructor
 public class VirtualAccountService {
@@ -45,10 +44,10 @@ public class VirtualAccountService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
-    private final RewardRepository rewardRepository;
-    private final FundingRepository fundingRepository;
 
-    private final UserService userService;
+    private final FundingService fundingService;
+    private final TransactionService transactionService;
+    private final ProjectService projectService;
 
 
     /**
@@ -123,10 +122,9 @@ public class VirtualAccountService {
         // 1. 잔액 업데이트
         BigDecimal beforeMoney = account.getBalance();
         account.setBalance(account.getBalance().add(request.amount()));
-        virtualAccountRepository.save(account);
 
         // 2. 거래 내역 생성 (여기서 첫번째 파라미터는 외부 전달용 ID로, null로 처리)
-        Transaction transaction = createTransaction(null, account, account, request.amount(), REMITTANCE);
+        Transaction transaction = transactionService.createTransaction(null, account, account, request.amount(), REMITTANCE);
 
         // 3. 응답 객체 생성 및 반환
         return mapToAccountPaymentResponse(account, transaction, beforeMoney, request.amount());
@@ -162,7 +160,7 @@ public class VirtualAccountService {
      */
     @Transactional(readOnly = true)
     public AccountResponse getAccountInfo(int accountId) {
-        return FromOwnVirtualAccount(getAccount(accountId));
+        return mapToAccountResponse(getAccount(accountId));
     }
 
     /**
@@ -173,7 +171,7 @@ public class VirtualAccountService {
      */
     @Transactional(readOnly = true)
     public AccountResponse getAccountInfo(String username) {
-        return FromOwnVirtualAccount(getAccount(username));
+        return mapToAccountResponse(getAccount(username));
     }
 
     /**
@@ -187,8 +185,7 @@ public class VirtualAccountService {
     @Transactional
     public AccountPaymentResponse payment(int accountId, AccountPaymentRequest request, String username) {
         // 1. 프로젝트 조회
-        Project project = projectRepository.findById(request.projectId())
-                .orElseThrow(() -> new EntityNotFoundException("프로젝트를 찾을 수 없습니다. 프로젝트 ID: " + request.projectId()));
+        Project project = projectService.getProject(request.projectId());
 
         // 2. 계좌 조회
         VirtualAccount payerAccount = getAccount(accountId);
@@ -209,8 +206,7 @@ public class VirtualAccountService {
     @Transactional
     public AccountPaymentResponse payment(AccountPaymentRequest request, String username) {
         // 1. 프로젝트 조회
-        Project project = projectRepository.findById(request.projectId())
-                .orElseThrow(() -> new EntityNotFoundException("프로젝트를 찾을 수 없습니다. 프로젝트 ID: " + request.projectId()));
+        Project project = projectService.getProject(request.projectId());
 
         // 2. 계좌 조회
         VirtualAccount payerAccount = getAccount(username);
@@ -240,40 +236,15 @@ public class VirtualAccountService {
 
         // 2. 프로젝트 목표액 업데이트
         project.setCurrentFunding(project.getCurrentFunding().add(paymentAmount));
-        projectRepository.save(project);
 
         // 3. 펀딩 및 거래 내역 저장
-        Funding funding = createFunding(project, username, paymentAmount);
-        Transaction transaction = createTransaction(funding, payerAccount, projectAccount, paymentAmount, REMITTANCE);
+        Funding funding = fundingService.createFunding(project, username, paymentAmount);
+        Transaction transaction = transactionService.createTransaction(funding, payerAccount, projectAccount, paymentAmount, REMITTANCE);
 
         // 4. 응답 객체 생성 및 반환
         return mapToAccountPaymentResponse(payerAccount, transaction, payerBalanceBefore, paymentAmount);
     }
 
-    /**
-     * 펀딩 내역을 저장 후 반환합니다.
-     *
-     * @param project       펀딩할 프로젝트
-     * @param username      펀딩한 유저
-     * @param paymentAmount 펀딩 금액
-     * @return 정보가 담긴 Funding 객체
-     */
-    private Funding createFunding(Project project, String username, BigDecimal paymentAmount) {
-        User sponsor = userService.getUserByName(username);
-
-        Funding funding = new Funding();
-        funding.setProject(project);
-        funding.setAmount(paymentAmount);
-        funding.setFundedAt(LocalDateTime.now());
-        funding.setSponsor(sponsor);
-
-        // 리워드 할당: 결제 금액이 리워드 기준 이하인 경우,
-        rewardRepository.findTopByProject_ProjectIdAndAmountLessThanEqualOrderByAmountDesc(project.getProjectId(), paymentAmount)
-                .ifPresent(funding::setReward);
-
-        fundingRepository.save(funding);
-        return funding;
-    }
 
     /**
      * 환불을 진행하는 로직입니다.
@@ -298,28 +269,14 @@ public class VirtualAccountService {
         BigDecimal refundAmount = oldTransaction.getAmount();
         processAccountPayment(refundAmount, projectAccount, payerAccount);
 
-        // 4. 펀딩 취소 및 환불 거래 내역 저장
-        Funding funding = cancelFunding(oldTransaction.getFunding().getFundingId());
-        Transaction newTransaction = createTransaction(funding, projectAccount, payerAccount, refundAmount, REFUND);
+        // 4. 펀딩 취소 및 환불 거래 내역 저장, 프로젝트 차감
+        Funding funding = fundingService.cancelFunding(oldTransaction.getFunding().getFundingId());
+        Transaction newTransaction = transactionService.createTransaction(funding, projectAccount, payerAccount, refundAmount, REFUND);
+        Project project = projectRepository.findProjectByTransactionId(transactionId);
+        project.setCurrentFunding(project.getCurrentFunding().subtract(refundAmount));
 
         // 5. 응답 객체 생성 및 반환 (환불 후 결제자 계좌 정보를 기준)
         return mapToAccountRefundResponse(payerAccount, newTransaction, transactionId, refundAmount, beforeMoney);
-    }
-
-    /**
-     * 펀딩 내역을 취소합니다.
-     *
-     * @param fundingId 취소할 펀딩 ID
-     * @return 취소된 Funding 객체
-     */
-    private Funding cancelFunding(Integer fundingId) {
-        Funding funding = fundingRepository.findByFundingId(fundingId)
-                .orElseThrow(() -> new FundingNotFoundException(fundingId));
-
-        funding.setDeleted(true);
-        fundingRepository.save(funding);
-
-        return funding;
     }
 
     /**
@@ -335,33 +292,7 @@ public class VirtualAccountService {
             throw new NotEnoughBalanceException(sourceAccount.getBalance());
         }
         sourceAccount.setBalance(sourceAccount.getBalance().subtract(amount));
-        virtualAccountRepository.save(sourceAccount);
         targetAccount.setBalance(targetAccount.getBalance().add(amount));
-        virtualAccountRepository.save(targetAccount);
     }
 
-    /**
-     * 거래 내역 생성 메서드
-     *
-     * @param funding         관련 펀딩 내역
-     * @param senderAccount   자금 출금 계좌 (결제 시에는 결제자, 환불 시에는 프로젝트 계좌)
-     * @param receiverAccount 자금 입금 계좌 (결제 시에는 프로젝트 계좌, 환불 시에는 결제자 계좌)
-     * @param amount          거래 금액
-     * @param type            거래 유형 (REMITTANCE 또는 REFUND)
-     * @return 생성된 Transaction 객체
-     */
-    private Transaction createTransaction(Funding funding, VirtualAccount senderAccount, VirtualAccount receiverAccount, BigDecimal amount, Transaction.TransactionType type) {
-        Transaction transaction = new Transaction();
-        transaction.setFunding(funding);
-        transaction.setAdmin(userRepository.findByName("Admin").orElse(null));
-        transaction.setSenderAccount(senderAccount);
-        transaction.setReceiverAccount(receiverAccount);
-        transaction.setAmount(amount);
-        transaction.setType(type);
-        transaction.setTransactionDate(LocalDateTime.now());
-
-        transactionRepository.save(transaction);
-
-        return transaction;
-    }
 }

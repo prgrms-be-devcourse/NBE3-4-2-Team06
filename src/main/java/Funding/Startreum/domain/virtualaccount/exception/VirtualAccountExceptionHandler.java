@@ -3,6 +3,7 @@ package Funding.Startreum.domain.virtualaccount.exception;
 import Funding.Startreum.common.util.ApiResponse;
 import Funding.Startreum.domain.transaction.entity.Transaction;
 import Funding.Startreum.domain.virtualaccount.controller.VirtualAccountController;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,10 @@ public class VirtualAccountExceptionHandler {
 
     private static final Map<Class<? extends RuntimeException>, HttpStatus> STATUS_MAP = Map.of(
             AccountNotFoundException.class, HttpStatus.NOT_FOUND,
-            NotEnoughBalanceException.class, HttpStatus.PAYMENT_REQUIRED,
+            NotEnoughBalanceException.class, HttpStatus.BAD_REQUEST,
             TransactionNotFoundException.class, HttpStatus.NOT_FOUND,
-            FundingNotFoundException.class, HttpStatus.NOT_FOUND
+            FundingNotFoundException.class, HttpStatus.NOT_FOUND,
+            EntityNotFoundException.class,  HttpStatus.NOT_FOUND
     );
 
     @ExceptionHandler({
@@ -27,6 +29,7 @@ public class VirtualAccountExceptionHandler {
             NotEnoughBalanceException.class,
             TransactionNotFoundException.class,
             FundingNotFoundException.class,
+            EntityNotFoundException.class,
     })
     public ResponseEntity<ApiResponse<Void>> handleException(RuntimeException e) {
         HttpStatus status = STATUS_MAP.getOrDefault(e.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
