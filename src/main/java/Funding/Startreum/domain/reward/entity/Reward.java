@@ -1,4 +1,4 @@
-package Funding.Startreum.domain.reward;
+package Funding.Startreum.domain.reward.entity;
 
 import Funding.Startreum.domain.project.entity.Project;
 import jakarta.persistence.*;
@@ -7,7 +7,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter

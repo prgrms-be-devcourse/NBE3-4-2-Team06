@@ -70,6 +70,9 @@ public class SecurityConfig {
                         //✅ 댓글 조회 허용 (로그인 없이 가능)
                         .requestMatchers(HttpMethod.GET, "/api/comment/**").permitAll()
 
+                        // ✅ 리워드 조회는 누구나 접근 가능
+                        .requestMatchers(HttpMethod.GET, "/api/reward/{projectId}").permitAll()
+
                         // ✅ HTML 페이지는 누군의 가 접근 가능 (관리자 뷰 페이지)
                         .requestMatchers("/admin").permitAll()
                         // ✅ 관리자 전용 API는 ROLE_ADMIN 필요
