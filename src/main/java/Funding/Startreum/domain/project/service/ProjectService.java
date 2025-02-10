@@ -5,6 +5,8 @@ import Funding.Startreum.common.util.JwtUtil;
 import Funding.Startreum.domain.project.dto.*;
 import Funding.Startreum.domain.project.entity.Project;
 import Funding.Startreum.domain.project.repository.ProjectRepository;
+import Funding.Startreum.domain.reward.Reward;
+import Funding.Startreum.domain.reward.RewardRepository;
 import Funding.Startreum.domain.users.User;
 import Funding.Startreum.domain.users.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final RewardRepository rewardRepository;
 
     @Transactional
     public ProjectCreateResponseDto createProject(ProjectCreateRequestDto projectCreateRequestDto, String userId) {
@@ -49,6 +52,13 @@ public class ProjectService {
         project.setIsDeleted(false);
 
         projectRepository.save(project);
+
+        Reward reward = new Reward();
+        reward.setProject(project);
+        reward.setDescription(project.getSimpleDescription());
+        reward.setAmount(BigDecimal.valueOf(10000));
+
+        rewardRepository.save(reward);
 
         return new ProjectCreateResponseDto(project.getProjectId(), project.getTitle(), project.getCreatedAt());
     }
