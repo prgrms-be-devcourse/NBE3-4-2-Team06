@@ -1,5 +1,9 @@
 package Funding.Startreum.domain.comment.dto.response;
+
+import Funding.Startreum.domain.comment.entity.Comment;
+
 import java.time.LocalDateTime;
+
 public record CommentResponse(
         int commentId,
         int projectId,
@@ -8,4 +12,15 @@ public record CommentResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
+
+    public static CommentResponse toResponse(Comment comment) {
+        return new CommentResponse(
+                comment.getCommentId(),
+                comment.getProject().getProjectId(),
+                comment.getUser().getUserId(),
+                comment.getContent(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt()
+        );
+    }
 }
