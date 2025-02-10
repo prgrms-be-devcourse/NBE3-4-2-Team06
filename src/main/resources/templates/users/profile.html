@@ -226,7 +226,7 @@
                     <td>${project.fundingGoal ? project.fundingGoal.toLocaleString() : '0'}원</td>
                     <td>${new Date(project.createdAt).toISOString().split('T')[0]}</td>
                     <td>${project.status === 'SUCCESS' ? '성공' : project.status === 'FAILED' ? '실패' : '진행중'}</td>
-                    <td>${project.approvalStatus || '승인대기'}</td>
+                    <td>${project.isApproved === 'APPROVE' ? '승인' : project.isApproved === 'REJECTED' ? '거절' : '승인대기'}</td>
                     <td>
                         <button class="btn edit">수정</button>
                         <button class="btn cancel">취소</button>
