@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -22,11 +23,18 @@ public class UserController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final MyFundingService myFundingService;
+    private final MyProjectService myProjectService;
 
-    public UserController(UserService userService, JwtUtil jwtUtil, RefreshTokenRepository refreshTokenRepository) {
+    public UserController(UserService userService, JwtUtil jwtUtil,
+                          RefreshTokenRepository refreshTokenRepository,
+                          MyFundingService myFundingService,
+                          MyProjectService myProjectService) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.myFundingService = myFundingService;
+        this.myProjectService = myProjectService;
     }
 
     // ID 중복 확인
@@ -218,5 +226,65 @@ public class UserController {
         userService.updateUserEmail(name, request.newEmail());
         return ResponseEntity.ok(Map.of("message", "이메일이 성공적으로 변경되었습니다."));
     }
+
+
+    // 🔹 로그인한 사용자의 후원 내역 조회 API
+    @GetMapping("/fundings/{username}")  // 🔹 경로 변수 추가
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getFundingsByUsername(@PathVariable String username) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "error", "message", "로그인 상태가 아닙니다."));
+        }
+
+        // 현재 로그인한 사용자와 요청한 사용자 이름이 일치하는지 확인
+        if (!authentication.getName().equals(username)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("status", "error", "message", "권한이 없습니다."));
+        }
+
+        // 사용자 정보 조회
+        User user = userService.getUserByName(username);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("status", "error", "message", "사용자 정보를 찾을 수 없습니다."));
+        }
+
+        // 후원 내역 조회
+        List<MyFundingResponseDTO> fundings = myFundingService.getMyFundings(user.getUserId());
+
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "data", fundings
+        ));
+    }
+
+    // 🔹 로그인한 수혜자의 프로젝트 목록 조회 API
+    @GetMapping("/projects/{username}")
+    @PreAuthorize("hasRole('ROLE_BENEFICIARY') and #username == authentication.name")
+    public ResponseEntity<?> getMyProjects(@PathVariable String username) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "error", "message", "로그인 상태가 아닙니다."));
+        }
+
+        if (!authentication.getName().equals(username)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("status", "error", "message", "권한이 없습니다."));
+        }
+
+        // 사용자 이름을 기준으로 프로젝트 조회
+        List<MyProjectDTO> projects = myProjectService.getProjectsByUser(username);
+
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "data", projects
+        ));
+    }
+
 
 }

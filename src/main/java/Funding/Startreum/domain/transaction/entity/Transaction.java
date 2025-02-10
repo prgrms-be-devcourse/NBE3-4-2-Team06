@@ -48,6 +48,8 @@ public class Transaction {
     @Column(updatable = false, nullable = false)
     private LocalDateTime transactionDate; // 거래 일자
 
+
+
     public enum TransactionType {
         REMITTANCE,  // 송금
         REFUND       // 환불

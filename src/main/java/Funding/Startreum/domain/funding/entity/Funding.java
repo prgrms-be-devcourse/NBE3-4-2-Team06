@@ -2,6 +2,7 @@ package Funding.Startreum.domain.funding.entity;
 
 import Funding.Startreum.domain.project.entity.Project;
 import Funding.Startreum.domain.reward.Reward;
+import Funding.Startreum.domain.transaction.entity.Transaction;
 import Funding.Startreum.domain.users.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,6 +11,7 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -40,4 +42,7 @@ public class Funding {
 
     @Column(nullable = false)
     private boolean isDeleted = false; // 삭제 여부, 기본 false
+
+    @OneToMany(mappedBy = "funding", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Transaction> transactions;  // 트랜잭션 리스트 추가
 }
