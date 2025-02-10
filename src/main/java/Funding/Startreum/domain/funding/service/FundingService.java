@@ -3,7 +3,7 @@ package Funding.Startreum.domain.funding.service;
 import Funding.Startreum.domain.funding.entity.Funding;
 import Funding.Startreum.domain.funding.repository.FundingRepository;
 import Funding.Startreum.domain.project.entity.Project;
-import Funding.Startreum.domain.reward.RewardRepository;
+import Funding.Startreum.domain.reward.repository.RewardRepository;
 import Funding.Startreum.domain.users.User;
 import Funding.Startreum.domain.users.UserService;
 import Funding.Startreum.domain.virtualaccount.exception.FundingNotFoundException;
