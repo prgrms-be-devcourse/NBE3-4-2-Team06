@@ -1,0 +1,101 @@
+/* Container Styling */
+.container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+/* Project Header */
+.project-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+.project-header img {
+    width: 400px;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.project-info {
+    flex: 1;
+}
+
+.project-info h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.project-info p.description {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Status Styling */
+.status {
+    font-size: 18px;
+    font-weight: bold;
+    color: #6a1b9a;
+    margin-bottom: 15px;
+}
+
+/* Author and Date Info */
+.author-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.author-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.author-info span {
+    font-size: 14px;
+    color: #555;
+}
+
+.date-range {
+    font-size: 14px;
+    color: #888;
+}
+
+/* Donation Button */
+.btn-primary {
+    background-color: #7d4baa;
+    color: white;
+    padding: 15px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #5a2e85;
+}
+
+/* Project Description Section */
+.project-description {
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 40px;
+}
+
+.project-description p {
+    font-size: 16px;
+    color: #444;
+    line-height: 1.6;
+}

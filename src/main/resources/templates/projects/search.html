@@ -15,7 +15,7 @@
 <!-- Search Results -->
 <div class="container mt-5">
   <h2>검색 결과</h2>
-  <ul id="searchResults"></ul>
+  <div id="searchResults" class="results-grid"></div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -43,26 +43,46 @@
                  return;
              }
 
-             data.data.forEach(project => {
-                 let fundingPercentage = ((project.currentFunding / project.fundingGoal) * 100).toFixed(1);
-                 let statusText = getStatusText(project.status);
-                 let statusClass = getStatusClass(project.status);
+           data.data.forEach(project => {
+    let fundingPercentage = ((project.currentFunding / project.fundingGoal) * 100).toFixed(1);
+    let daysLeft = project.daysLeft;
+    let projectElement = document.createElement('div');
+    projectElement.classList.add('project-card');
 
-                 let projectElement = document.createElement('li');
-                 projectElement.innerHTML = `
-                     <a href="/projects/${project.projectId}" class="project-title">${project.title}</a>
-                     <p>${project.description}</p>
-                     <p>목표 금액: ${project.fundingGoal.toLocaleString()} 원</p>
-                     <p>현재 모금: ${project.currentFunding.toLocaleString()} 원</p>
-                     <p class="${statusClass}">상태: ${statusText} (${fundingPercentage}%)</p>
+    // 카드 전체에 클릭 이벤트 추가
+    projectElement.addEventListener('click', () => {
+        window.location.href = `/projects/${project.projectId}`;
+    });
 
-                     <div class="progress-container">
-                         <div class="progress-bar" style="width: ${fundingPercentage}%;"></div>
-                     </div>
-                 `;
+    projectElement.innerHTML = `
+        <div class="project-header">
+            <h3>${project.title}</h3>
+            <p>${project.description}</p>
+        </div>
 
-                 results.appendChild(projectElement);
-             });
+        <div class="project-info">
+            <div class="info-item">
+                <i class="fa fa-calendar"></i> ${project.date}
+            </div>
+            <div class="info-item">
+                <i class="fa fa-map-marker"></i> ${project.location}
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" style="width: ${fundingPercentage}%;"></div>
+        </div>
+
+        <div class="project-footer">
+            <div class="funding-percentage">${fundingPercentage}%</div>
+            <div class="funding-amount">${project.currentFunding.toLocaleString()}원</div>
+            <div class="days-left"><strong>${daysLeft}일 남음</strong></div>
+            <div class="goal-amount">목표액: ${project.fundingGoal.toLocaleString()}원</div>
+        </div>
+    `;
+
+    results.appendChild(projectElement);
+});
          })
          .catch(error => {
              console.error('검색 오류:', error);
