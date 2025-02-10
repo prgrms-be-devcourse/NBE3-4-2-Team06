@@ -1,36 +1,59 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>프로젝트 상세 정보</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상세 페이지</title>
+
     <link rel="stylesheet" th:href="@{/css/detail.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <div th:replace="~{fragments/header :: header}"></div>
 </head>
 <body>
+<div class="project-container">
+    <div class="project-main-content">
+        <img id="projectBanner" src="" alt="Project Image">
+        <div class="project-details">
+            <div class="project-status" id="status"></div>
+            <div class="project-title" id="projectTitle"></div>
 
-<!-- Header -->
-<div th:replace="~{fragments/header :: header}"></div>
+            <!-- 간단한 설명 표시 -->
+            <div class="project-simple-description" id="projectSimpleDescription"></div>
 
-<div class="container mt-5">
-    <h1 id="projectTitle"></h1>
-    <img id="projectBanner" src="" alt="프로젝트 배너 이미지" class="img-fluid">
-    <p id="projectDescription"></p>
-    <p>목표 금액: <span id="fundingGoal"></span> 원</p>
-    <p>현재 모금: <span id="currentFunding"></span> 원</p>
-    <p>상태: <span id="status"></span></p>
-    <p>시작일: <span id="startDate"></span></p>
-    <p>종료일: <span id="endDate"></span></p>
+            <div class="project-publisher">
+                <img src="https://via.placeholder.com/65" alt="Publisher Avatar">
+                <div class="publisher-info">
+                    <span id="creatorName"></span>
+                    <div class="project-date"><span id="startDate"></span> ~ <span id="endDate"></span></div>
+                </div>
+            </div>
+            <div class="project-support-button" onclick="openFundingModal()">후원 하기</div>
+        </div>
+    </div>
 
-    <!-- 후원하기 버튼 (항상 표시됨) -->
-    <div class="mt-4">
-        <button class="btn btn-primary btn-lg" onclick="openFundingModal()">후원하기</button>
+    <!-- 상세 설명을 복사하기 위한 영역 -->
+    <div class="project-description-box">
+
+        <p id="projectDescription"></p>
+    </div>
+
+    <div class="project-description-box">
+        <p>목표 금액: <span id="fundingGoal"></span> 원</p>
+        <p>현재 모금: <span id="currentFunding"></span> 원</p>
+    </div>
+
+    <div class="project-comments-section">
+        <h3>댓글</h3>
+        <div class="project-write-comment">
+            <textarea placeholder="150자 내외로 작성하세요."></textarea>
+            <button>등록</button>
+        </div>
+        <div id="commentsList"></div> <!-- 댓글 목록은 여기에 추가 -->
     </div>
 </div>
 
-
-<!-- TODO : 담당자 - 한상훈 : 후원 결제 로직 구현 -->
 <script>
-    let userRole = ""; // 사용자 역할 저장
-
     document.addEventListener('DOMContentLoaded', function () {
         let projectId = window.location.pathname.split('/').pop();
         let apiUrl = `/api/projects/${projectId}`;
@@ -40,38 +63,81 @@
             .then(data => {
                 document.getElementById("projectTitle").innerText = data.title;
                 document.getElementById("projectBanner").src = data.bannerUrl;
+                document.getElementById("projectSimpleDescription").innerText = data.simpleDescription;
                 document.getElementById("projectDescription").innerText = data.description;
                 document.getElementById("fundingGoal").innerText = data.fundingGoal.toLocaleString();
                 document.getElementById("currentFunding").innerText = data.currentFunding.toLocaleString();
                 document.getElementById("status").innerText = data.status;
                 document.getElementById("startDate").innerText = data.startDate;
                 document.getElementById("endDate").innerText = data.endDate;
+                document.getElementById("creatorName").innerText = data.creatorName;
             })
             .catch(error => {
                 console.error("프로젝트 상세 불러오기 오류:", error);
-                alert("프로젝트 정보를 불러오는 중 오류가 발생했습니다.");
+                alert("프로젝트 정보를 불로오는 중 오류가 발생했습니다.");
             });
 
-        // ✅ 로그인 정보에서 역할 가져오기
         const accessToken = localStorage.getItem("accessToken");
         if (accessToken) {
             try {
                 const tokenPayload = JSON.parse(atob(accessToken.split(".")[1]));
-                userRole = tokenPayload.role || "";
+                document.getElementById("userName").innerText = `${tokenPayload.username} 님 환영합니다.`;
+                document.getElementById("userRole").innerText = tokenPayload.role || "";
             } catch (error) {
                 console.error("JWT 디코딩 오류:", error);
             }
         }
     });
 
+    function addComment() {
+        const commentText = document.getElementById("commentInput").value.trim();
+        if (!commentText) {
+            alert("댓글 내용을 입력하세요.");
+            return;
+        }
+
+        const commentSection = document.getElementById("commentsList");
+        const commentElement = document.createElement("div");
+        commentElement.classList.add("comment");
+        commentElement.innerHTML = `
+            <img src="https://via.placeholder.com/65" alt="User Avatar">
+            <div class="comment-content">
+                <h4>경수자</h4>
+                <p>${commentText}</p>
+                <span class="date">${new Date().toLocaleDateString()}</span>
+                <div class="comment-actions">
+                    <button onclick="editComment(this)">수정</button>
+                    <button onclick="deleteComment(this)">삭제</button>
+                </div>
+            </div>
+        `;
+        commentSection.appendChild(commentElement);
+
+        document.getElementById("commentInput").value = "";
+    }
+
+    function editComment(button) {
+        const commentContent = button.closest(".comment-content").querySelector("p");
+        const newComment = prompt("댓글 내용을 수정하세요.", commentContent.innerText);
+        if (newComment) {
+            commentContent.innerText = newComment;
+        }
+    }
+
+    function deleteComment(button) {
+        if (confirm("댓글를 삭제하시겠습니꼴")) {
+            button.closest(".comment").remove();
+        }
+    }
+
     function openFundingModal() {
+        const userRole = document.getElementById("userRole").innerText;
         if (userRole !== "ROLE_SPONSOR") {
             alert("❌ 후원자는 ROLE_SPONSOR 사용자만 가능합니다.");
             return;
         }
 
         let amount = prompt("후원 금액을 입력하세요 (최소 10,000원)");
-
         if (amount && parseInt(amount) >= 10000) {
             processFunding(parseInt(amount));
         } else {
@@ -82,9 +148,6 @@
     async function processFunding(amount) {
         const accessToken = localStorage.getItem("accessToken");
         const projectId = window.location.pathname.split('/').pop();
-        console.log("후원 로직 시작");
-        // ${projectId}
-
 
         try {
             const response = await fetch(`/api/account/payment`, {
@@ -97,19 +160,22 @@
             });
 
             if (response.ok) {
-                const result = await response.json();
                 alert("결제에 성공했습니다.");
                 location.reload();
             } else {
-                alert("결제에 실패했습니다 : " + result.message);
+                const result = await response.json();
+                alert("결제에 실패했습니다: " + result.message);
             }
-            location.reload(); // 후원 완료 후 새로고침
         } catch (error) {
             console.error("결제 오류:", error);
             alert("결제 중 문제가 발생했습니다.");
         }
     }
-</script>
 
+    function logout() {
+        localStorage.removeItem("accessToken");
+        window.location.href = "/login";
+    }
+</script>
 </body>
 </html>

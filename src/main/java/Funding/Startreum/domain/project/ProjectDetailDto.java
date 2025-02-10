@@ -17,7 +17,10 @@ public record ProjectDetailDto(
         BigDecimal currentFunding,
         String status,
         String startDate,
-        String endDate
+        String endDate,
+        String  creatorName,
+        String simpleDescription // 간단한 설명
+
 ) {
     public static ProjectDetailDto from(Project project) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -31,7 +34,9 @@ public record ProjectDetailDto(
                 project.getCurrentFunding(),
                 convertStatusToKorean(project.getStatus().name()),
                 project.getStartDate().format(formatter),
-                project.getEndDate().format(formatter)
+                project.getEndDate().format(formatter),
+                project.getCreator().getName(),
+                project.getSimpleDescription()
         );
     }
 

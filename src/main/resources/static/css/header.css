@@ -15,9 +15,13 @@
 }
 
 /* 기본 로고 색상 (검은색) */
-.logo {
+.custom-header .logo {
     color: #000000 !important;
+    font-family: 'Jersey 25', sans-serif !important;
+    font-weight: bold !important;
+    font-size: 40px !important;
 }
+
 /* Logo Section */
 .logo {
     position: absolute;
@@ -25,10 +29,11 @@
     top: 20px;
     font-size: 40px;
     color: #FFFFFF;
-    font-family: 'Jersey 25', sans-serif;
+    font-family: 'Jersey 25', sans-serif !important;
     font-weight: bold;
     z-index: 2;
 }
+
 /* 메인 페이지에서 로고 색상 (흰색) */
 .main-page .logo {
     color: #FFFFFF !important;
