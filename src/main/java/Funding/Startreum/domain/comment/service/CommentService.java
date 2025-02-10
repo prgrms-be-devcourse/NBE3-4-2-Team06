@@ -5,7 +5,7 @@ import Funding.Startreum.domain.comment.dto.response.CommentResponse;
 import Funding.Startreum.domain.comment.entity.Comment;
 import Funding.Startreum.domain.comment.repository.CommentRepository;
 import Funding.Startreum.domain.project.entity.Project;
-import Funding.Startreum.domain.project.repository.ProjectRepository;
+import Funding.Startreum.domain.project.service.ProjectService;
 import Funding.Startreum.domain.users.User;
 import Funding.Startreum.domain.users.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,7 +26,7 @@ public class CommentService {
 
     final private CommentRepository commentRepository;
     final private UserRepository userRepository;
-    final private ProjectRepository projectRepository;
+    final private ProjectService projectService;
 
     @Transactional(readOnly = true)
     public Comment getComment(int commentId) {
@@ -54,8 +54,7 @@ public class CommentService {
         User user = userRepository.findByName(username)
                 .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다 : " + username));
 
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("프로젝트를 찾을 수 없습니다 : " + projectId));
+        Project project = projectService.getProject(projectId);
 
         comment.setProject(project);
         comment.setUser(user);

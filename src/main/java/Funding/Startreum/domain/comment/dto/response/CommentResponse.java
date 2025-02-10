@@ -7,7 +7,8 @@ import java.time.LocalDateTime;
 public record CommentResponse(
         int commentId,
         int projectId,
-        int userId,
+//        int userId,
+        String userName,
         String content,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
@@ -17,10 +18,12 @@ public record CommentResponse(
         return new CommentResponse(
                 comment.getCommentId(),
                 comment.getProject().getProjectId(),
-                comment.getUser().getUserId(),
+//                comment.getUser().getUserId(),
+                comment.getUser().getName(),
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt()
+
         );
     }
 }

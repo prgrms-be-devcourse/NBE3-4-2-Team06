@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"user","project"}) // 순환 참조 방지
 @Entity
 @Table(name = "comments")
 public class Comment {
