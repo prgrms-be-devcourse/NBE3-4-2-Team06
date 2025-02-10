@@ -10,8 +10,10 @@ import Funding.Startreum.domain.virtualaccount.dto.response.AccountPaymentRespon
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountRefundResponse;
 import Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse;
 import Funding.Startreum.domain.virtualaccount.exception.AccountNotFoundException;
+import Funding.Startreum.domain.virtualaccount.exception.NotEnoughBalanceException;
 import Funding.Startreum.domain.virtualaccount.repository.VirtualAccountRepository;
 import Funding.Startreum.domain.virtualaccount.service.VirtualAccountService;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -90,7 +92,7 @@ class VirtualAccountControllerTest {
      */
     @BeforeEach
     void setUp() {
-// 가상 계좌 및 프로젝트 생성
+        // 가상 계좌 및 프로젝트 생성
         createVirtualAccount(virtualAccountRepository, ACCOUNT_ID, OWNER);
         createVirtualProject(projectRepository, PROJECT_ID, OWNER);
 
@@ -350,6 +352,42 @@ class VirtualAccountControllerTest {
                             .content("{ \"projectId\": 1, \"amount\": 1000 }")
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("[결제 400] 잔액 부족 시 결제 실패")
+        void paymentInsufficientBalance() throws Exception {
+            BigDecimal amount = BigDecimal.valueOf(1000);
+
+            given(virtualAccountService.payment(eq(ACCOUNT_ID), any(AccountPaymentRequest.class), eq(OWNER)))
+                    .willThrow(new NotEnoughBalanceException(BigDecimal.valueOf(500)));
+
+            mockMvc.perform(post(BASE_URL + "/{accountId}/payment", ACCOUNT_ID)
+                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + ownerToken)
+                            .content("{ \"projectId\": 1, \"amount\": 1000 }")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value("error"))
+                    .andExpect(jsonPath("$.message").value("잔액이 부족합니다. 현재 잔액:" + 500))
+                    .andExpect(jsonPath("$.data").isEmpty());
+        }
+
+        @Test
+        @DisplayName("[결제 404] 존재하지 않는 프로젝트로 결제 시 실패")
+        void paymentNonExistingProject() throws Exception {
+            BigDecimal amount = BigDecimal.valueOf(1000);
+
+            given(virtualAccountService.payment(eq(ACCOUNT_ID), any(AccountPaymentRequest.class), eq(OWNER)))
+                    .willThrow(new EntityNotFoundException("프로젝트를 찾을 수 없습니다. 프로젝트 ID: 1"));
+
+            mockMvc.perform(post(BASE_URL + "/{accountId}/payment", ACCOUNT_ID)
+                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + ownerToken)
+                            .content("{ \"projectId\": 1, \"amount\": 1000 }")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.status").value("error"))
+                    .andExpect(jsonPath("$.message").value("프로젝트를 찾을 수 없습니다. 프로젝트 ID: " + PROJECT_ID))
+                    .andExpect(jsonPath("$.data").isEmpty());
         }
     }
 
