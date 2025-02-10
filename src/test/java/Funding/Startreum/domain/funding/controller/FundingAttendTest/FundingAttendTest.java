@@ -1,7 +1,7 @@
 package Funding.Startreum.domain.funding.controller.FundingAttendTest;
 
 import Funding.Startreum.common.util.JwtUtil;
-import Funding.Startreum.domain.funding.FundingRepository;
+import Funding.Startreum.domain.funding.repository.FundingRepository;
 import Funding.Startreum.domain.sponsor.FudingAttendResponse;
 import Funding.Startreum.domain.sponsor.SponsorService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,10 +15,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @AutoConfigureMockMvc

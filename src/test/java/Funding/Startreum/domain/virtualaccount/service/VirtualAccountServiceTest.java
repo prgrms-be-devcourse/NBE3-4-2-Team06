@@ -1,11 +1,15 @@
 package Funding.Startreum.domain.virtualaccount.service;
 
-import Funding.Startreum.domain.funding.FundingRepository;
+import Funding.Startreum.domain.funding.entity.Funding;
+import Funding.Startreum.domain.funding.repository.FundingRepository;
+import Funding.Startreum.domain.funding.service.FundingService;
 import Funding.Startreum.domain.project.entity.Project;
 import Funding.Startreum.domain.project.repository.ProjectRepository;
+import Funding.Startreum.domain.project.service.ProjectService;
 import Funding.Startreum.domain.reward.RewardRepository;
 import Funding.Startreum.domain.transaction.entity.Transaction;
 import Funding.Startreum.domain.transaction.repository.TransactionRepository;
+import Funding.Startreum.domain.transaction.service.TransactionService;
 import Funding.Startreum.domain.users.User;
 import Funding.Startreum.domain.users.UserRepository;
 import Funding.Startreum.domain.users.UserService;
@@ -53,6 +57,16 @@ class VirtualAccountServiceTest {
 
     @Mock
     private FundingRepository fundingRepository;
+
+    @Mock
+    private ProjectService projectService;
+
+    @Mock
+    private FundingService fundingService;
+
+    @Mock
+    private TransactionService transactionService;
+
 
     @Mock
     private UserService userService;
@@ -190,11 +204,17 @@ class VirtualAccountServiceTest {
             account.setUser(new User());
             when(virtualAccountRepository.findById(accountId)).thenReturn(Optional.of(account));
 
-            doAnswer(invocation -> {
-                Transaction transaction = invocation.getArgument(0);
-                transaction.setTransactionId(1); // 테스트용 모의 ID
-                return transaction;
-            }).when(transactionRepository).save(any(Transaction.class));
+            when(transactionService.createTransaction(
+                    any(),
+                    any(VirtualAccount.class),
+                    any(VirtualAccount.class),
+                    any(BigDecimal.class),
+                    any(Transaction.TransactionType.class)
+            )).thenAnswer(invocation -> {
+                Transaction tx = new Transaction();
+                tx.setTransactionId(100); // 테스트용 거래 ID 할당
+                return tx;
+            });
 
             AccountRequest request = new AccountRequest(chargeAmount);
 
@@ -219,11 +239,18 @@ class VirtualAccountServiceTest {
             account.setUser(user);
             when(virtualAccountRepository.findByUser_Name(username)).thenReturn(Optional.of(account));
 
-            doAnswer(invocation -> {
-                Transaction transaction = invocation.getArgument(0);
-                transaction.setTransactionId(1); // 테스트용 모의 ID
-                return transaction;
-            }).when(transactionRepository).save(any(Transaction.class));
+            when(transactionService.createTransaction(
+                    any(),
+                    any(VirtualAccount.class),
+                    any(VirtualAccount.class),
+                    any(BigDecimal.class),
+                    any(Transaction.TransactionType.class)
+            )).thenAnswer(invocation -> {
+                Transaction tx = new Transaction();
+                tx.setTransactionId(100); // 테스트용 거래 ID 할당
+                return tx;
+            });
+
 
             AccountRequest request = new AccountRequest(chargeAmount);
             AccountPaymentResponse response = virtualAccountService.chargeByUsername(username, request);
@@ -265,7 +292,7 @@ class VirtualAccountServiceTest {
             projectAccount.setUser(new User());
 
             // Mocking repository 및 서비스 호출
-            when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+            when(projectService.getProject(eq(projectId))).thenReturn(project);
             when(virtualAccountRepository.findById(payerAccountId)).thenReturn(Optional.of(payerAccount));
             when(virtualAccountRepository.findBeneficiaryAccountByProjectId(projectId)).thenReturn(Optional.of(projectAccount));
 
@@ -275,12 +302,17 @@ class VirtualAccountServiceTest {
             sponsor.setName(username);
             when(userService.getUserByName(username)).thenReturn(sponsor);
 
-            // transactionRepository.save 모의 (거래 ID 설정)
-            doAnswer(invocation -> {
-                Transaction tx = invocation.getArgument(0);
-                tx.setTransactionId(100);
+            when(transactionService.createTransaction(
+                    any(), // Funding 객체, 여기서는 null로 전달됩니다.
+                    any(VirtualAccount.class),
+                    any(VirtualAccount.class),
+                    any(BigDecimal.class),
+                    any(Transaction.TransactionType.class)
+            )).thenAnswer(invocation -> {
+                Transaction tx = new Transaction();
+                tx.setTransactionId(100); // 테스트용 거래 ID 할당
                 return tx;
-            }).when(transactionRepository).save(any(Transaction.class));
+            });
 
             // 결제 요청 객체 (projectId와 paymentAmount 포함)
             AccountPaymentRequest request = new AccountPaymentRequest(projectId, paymentAmount);
@@ -325,9 +357,10 @@ class VirtualAccountServiceTest {
             projectAccount.setUser(new User());
 
             // Mocking: username으로 결제자 계좌 조회
-            when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+            when(projectService.getProject(eq(projectId))).thenReturn(project);
             when(virtualAccountRepository.findByUser_Name(username)).thenReturn(Optional.of(payerAccount));
-            when(virtualAccountRepository.findBeneficiaryAccountByProjectId(projectId)).thenReturn(Optional.of(projectAccount));
+            when(virtualAccountRepository.findBeneficiaryAccountByProjectId(projectId))
+                    .thenReturn(Optional.of(projectAccount));
 
             // 후원자 정보
             User sponsor = new User();
@@ -335,21 +368,39 @@ class VirtualAccountServiceTest {
             sponsor.setName(username);
             when(userService.getUserByName(username)).thenReturn(sponsor);
 
-            // transactionRepository.save 모의
-            doAnswer(invocation -> {
-                Transaction tx = invocation.getArgument(0);
-                tx.setTransactionId(101);
+            when(transactionService.createTransaction(
+                    any(), // Funding 객체, 여기서는 null로 전달됩니다.
+                    any(VirtualAccount.class),
+                    any(VirtualAccount.class),
+                    any(BigDecimal.class),
+                    any(Transaction.TransactionType.class)
+            )).thenAnswer(invocation -> {
+                Transaction tx = new Transaction();
+                tx.setTransactionId(101); // 테스트용 거래 ID 할당
                 return tx;
-            }).when(transactionRepository).save(any(Transaction.class));
+            });
+
+            when(fundingService.createFunding(any(Project.class), anyString(), any(BigDecimal.class)))
+                    .thenAnswer(invocation -> {
+                        Funding funding = new Funding();
+                        funding.setFundingId(999); // 테스트용 펀딩 ID 할당
+                        return funding;
+                    });
 
             AccountPaymentRequest request = new AccountPaymentRequest(projectId, paymentAmount);
 
             AccountPaymentResponse response = virtualAccountService.payment(request, username);
 
-            // 검증: 결제자 잔액 300 - 80 = 220, 프로젝트 계좌 잔액 50 + 80 = 130, 프로젝트 currentFunding = 80
-            assertEquals(BigDecimal.valueOf(220), payerAccount.getBalance(), "결제 후 결제자 계좌 잔액이 갱신되어야 합니다.");
-            assertEquals(BigDecimal.valueOf(130), projectAccount.getBalance(), "결제 후 프로젝트 계좌 잔액이 갱신되어야 합니다.");
-            assertEquals(BigDecimal.valueOf(80), project.getCurrentFunding(), "프로젝트 currentFunding이 갱신되어야 합니다.");
+            // 검증:
+            // - 결제자 잔액: 300 - 80 = 220
+            // - 프로젝트 수혜자 계좌 잔액: 50 + 80 = 130
+            // - 프로젝트 currentFunding: 0 + 80 = 80
+            assertEquals(BigDecimal.valueOf(220), payerAccount.getBalance(),
+                    "결제 후 결제자 계좌 잔액이 갱신되어야 합니다.");
+            assertEquals(BigDecimal.valueOf(130), projectAccount.getBalance(),
+                    "결제 후 프로젝트 계좌 잔액이 갱신되어야 합니다.");
+            assertEquals(BigDecimal.valueOf(80), project.getCurrentFunding(),
+                    "프로젝트 currentFunding이 갱신되어야 합니다.");
 
             // 응답 검증
             assertEquals(101, response.transactionId(), "거래 ID가 매핑되어야 합니다.");

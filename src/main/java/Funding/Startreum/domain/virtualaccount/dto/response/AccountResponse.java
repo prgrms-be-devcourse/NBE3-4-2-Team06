@@ -15,7 +15,7 @@ public record AccountResponse(
      * @param account 조회할 계좌
      * @return 변환된 DTO
      */
-    public static AccountResponse FromOwnVirtualAccount(VirtualAccount account) {
+    public static AccountResponse mapToAccountResponse(VirtualAccount account) {
         return new AccountResponse(
                 account.getAccountId(),
                 account.getBalance(),

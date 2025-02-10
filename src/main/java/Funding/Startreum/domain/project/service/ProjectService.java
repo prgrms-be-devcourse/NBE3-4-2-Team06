@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.net.ResponseCache;
 import java.time.LocalDateTime;
 
 @Service
@@ -24,6 +23,13 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+
+
+    @Transactional(readOnly = true)
+    public Project getProject(Integer projectId) {
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 프로젝트를 찾을 수 없습니다. :" + projectId));
+    }
 
     @Transactional
     public ProjectCreateResponseDto createProject(ProjectCreateRequestDto projectCreateRequestDto, String userId) {
@@ -91,6 +97,7 @@ public class ProjectService {
                 project.getUpdatedAt() // 수정된 시간
         );
     }
+
     public void deleteProject(Integer projectId, String token) {
         // "Bearer " 문자열 제거
         String email = jwtUtil.getEmailFromToken(token.replace("Bearer ", ""));
@@ -104,6 +111,7 @@ public class ProjectService {
         // 프로젝트와 연관된 엔티티 삭제 (Cascade 설정이 되어 있으면 자동 삭제됨)
         projectRepository.delete(findProject);
     }
+
     public ProjectApprovalResponseDto requestApprove(Integer projectId, String token) {
         String email = jwtUtil.getEmailFromToken(token.replace("Bearer ", ""));
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "사용자를 찾을 수 없습니다."));
