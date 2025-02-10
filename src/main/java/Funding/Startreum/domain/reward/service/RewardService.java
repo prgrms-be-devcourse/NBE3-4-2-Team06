@@ -116,7 +116,7 @@ public class RewardService {
 
     /**
      * 지정된 프로젝트 ID에 속한 모든 리워드를 조회한 후,
-     * * 각 리워드 엔티티를 {@link RewardResponse} DTO로 변환하여 리스트로 반환합니다.
+     *      * 각 리워드 엔티티를 {@link RewardResponse} DTO로 변환하여 리스트로 반환합니다.
      *
      * @param projectId 조회할 리워드가 속한 프로젝트의 ID
      * @return 해당 프로젝트의 리워드 정보를 담은 {@link RewardResponse} DTO 리스트

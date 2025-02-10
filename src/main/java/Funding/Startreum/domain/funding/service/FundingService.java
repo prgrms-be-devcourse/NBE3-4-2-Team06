@@ -39,8 +39,8 @@ public class FundingService {
         funding.setSponsor(sponsor);
 
         // 리워드 할당: 결제 금액이 리워드 기준 이하인 경우,
-        rewardRepository.findTopByProject_ProjectIdAndAmountLessThanEqualOrderByAmountDesc(project.getProjectId(), paymentAmount)
-                .ifPresent(funding::setReward);
+       // rewardRepository.findTopByProject_ProjectIdAndAmountLessThanEqualOrderByAmountDesc(project.getProjectId(), paymentAmount)
+      //          .ifPresent(funding::setReward);
 
         fundingRepository.save(funding);
         return funding;
