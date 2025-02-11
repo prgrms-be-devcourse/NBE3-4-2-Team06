@@ -1,4 +1,4 @@
-package Funding.Startreum.domain.virtualaccount.exception;
+package Funding.Startreum.domain.transaction.transaction;
 
 public class TransactionNotFoundException extends RuntimeException {
 
