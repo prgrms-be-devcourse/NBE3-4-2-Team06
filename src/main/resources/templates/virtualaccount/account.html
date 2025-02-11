@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>계좌 관리</title>
-    <link rel="stylesheet" href="/css/account.css">
+    <link rel="stylesheet" th:href="@{/css/account.css}">
 </head>
 <body>
 
@@ -22,9 +22,9 @@
 
     <!-- 계좌 정보 (초기에는 숨김) -->
     <div id="account-info" style="display: none;">
-        <p><strong>사용자 ID:</strong> <span id="account-username"></span></p>
+<!--        <p><strong>사용자 ID:</strong> <span id="account-username"></span></p>-->
         <p><strong>계좌 잔액:</strong> <span id="account-balance"></span> 원</p>
-        <p><strong>펀딩 차단 여부:</strong> <span id="funding-status"></span></p>
+<!--        <p><strong>펀딩 차단 여부:</strong> <span id="funding-status"></span></p>-->
     </div>
 
     <!-- 계좌 관련 버튼 (초기에는 숨김) -->
@@ -84,10 +84,10 @@
              alert("계좌가 없습니다. 새로 생성하세요.");
          } else {
              document.getElementById("account-info").style.display = "block";
-             document.getElementById("account-username").innerText = data.username;
+             <!--document.getElementById("account-username").innerText = data.username;-->
              document.getElementById("account-balance").innerText = data.balance;
-             document.getElementById("funding-status").innerText = data.fundingBlocked ? "차단됨" : "활성화됨";
-             document.getElementById("funding-status").style.color = data.fundingBlocked ? "red" : "green";
+             <!--document.getElementById("funding-status").innerText = data.fundingBlocked ? "차단됨" : "활성화됨";-->
+             <!--document.getElementById("funding-status").style.color = data.fundingBlocked ? "red" : "green";-->
              document.getElementById("account-actions").style.display = "block";
          }
      } catch (error) {
