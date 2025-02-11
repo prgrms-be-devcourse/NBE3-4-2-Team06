@@ -1,7 +1,8 @@
 package Funding.Startreum.domain.virtualaccount.exception;
 
 import Funding.Startreum.common.util.ApiResponse;
-import Funding.Startreum.domain.transaction.entity.Transaction;
+import Funding.Startreum.domain.funding.exception.FundingNotFoundException;
+import Funding.Startreum.domain.transaction.transaction.TransactionNotFoundException;
 import Funding.Startreum.domain.virtualaccount.controller.VirtualAccountController;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice(assignableTypes = VirtualAccountController.class)

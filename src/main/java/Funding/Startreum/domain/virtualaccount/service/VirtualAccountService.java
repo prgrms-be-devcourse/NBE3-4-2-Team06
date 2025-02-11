@@ -20,7 +20,7 @@ import Funding.Startreum.domain.virtualaccount.dto.response.AccountResponse;
 import Funding.Startreum.domain.virtualaccount.entity.VirtualAccount;
 import Funding.Startreum.domain.virtualaccount.exception.AccountNotFoundException;
 import Funding.Startreum.domain.virtualaccount.exception.NotEnoughBalanceException;
-import Funding.Startreum.domain.virtualaccount.exception.TransactionNotFoundException;
+import Funding.Startreum.domain.transaction.transaction.TransactionNotFoundException;
 import Funding.Startreum.domain.virtualaccount.repository.VirtualAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
