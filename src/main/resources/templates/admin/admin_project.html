@@ -1,18 +1,30 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<html lang="ko">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-    <title>프로젝트 관리 - 관리자</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/admin_project.css">
+    <title>프로젝트 관리 - 관리자</title>
+    <link rel="stylesheet" th:href="@{/css/admin_project.css}">
+
 </head>
 <body>
+<div class="admin-page">
+<!-- Sidebar -->
+<div class="sidebar">
+    <button onclick="location.href='#'">회원 관리</button>
+    <button onclick="location.href='/admin/project'">프로젝트 관리</button>
+    <button onclick="location.href='#'">송금 및 환불</button>
+    <button onclick="location.href='#'">문의 관리</button>
+</div>
+
 
 <!-- Header -->
-<div th:replace="~{fragments/header :: header}"></div>
+<div class="header">
+    <div class="header" th:replace="~{fragments/header :: header}"></div>
+</div>
 
 <!-- 프로젝트 관리 섹션 -->
-<section class="container py-5">
+<section class="main-content container py-5">
     <h1 class="fw-bold mb-4 text-center">프로젝트 관리</h1>
 
     <!-- 상태 필터링 -->
@@ -22,7 +34,7 @@
             <option value="">전체</option>
             <option value="APPROVE">승인됨</option>
             <option value="AWAITING_APPROVAL">승인 대기중</option>
-            <option value="REJECTED">거부됨</option>
+            <option value="REJECTED">거절됨</option>
         </select>
         <button class="btn btn-primary" onclick="loadProjects()">조회</button>
     </div>
@@ -31,15 +43,14 @@
     <table class="table table-striped table-hover">
         <thead class="table-dark text-center">
         <tr>
-            <th>#</th>
-            <th>프로젝트명</th>
+            <th>프로젝트 ID</th>
+            <th>제목</th>
+            <th>상태</th>
+            <th>승인</th>
             <th>목표 금액</th>
-            <th>현재 금액</th>
+            <th>현재 모집 금액</th>
             <th>시작일</th>
             <th>종료일</th>
-            <th>진행 상태</th>
-            <th>승인 상태</th>
-            <th>관리</th>
         </tr>
         </thead>
         <tbody id="project-list">
@@ -47,9 +58,6 @@
         </tbody>
     </table>
 </section>
-
-<!-- Footer -->
-<div th:replace="~{fragments/footer :: footer}"></div>
 
 <!-- 상태 변경 모달 -->
 <div id="editModal" class="modal">
@@ -75,7 +83,7 @@
         <button class="btn btn-success mt-2" onclick="updateProjectStatus()">저장</button>
     </div>
 </div>
-
+</div>
 <script>
     const statusTranslations = {
         "ONGOING": "진행중",
@@ -116,36 +124,25 @@
             }
 
             const data = await response.json();
-            console.log("🔍 API 응답 데이터:", data);
-
             const projectList = document.getElementById("project-list");
             projectList.innerHTML = "";
 
-            data.forEach((project, index) => {
+            data.forEach(project => {
                 const startDate = new Date(project.startDate).toISOString().split("T")[0];
                 const endDate = new Date(project.endDate).toISOString().split("T")[0];
+                const statusClass = project.status === "SUCCESS" ? 'status-success' :
+                                    project.status === "FAILED" ? 'status-failed' : 'status-ongoing';
 
                 projectList.innerHTML += `
                     <tr class="text-center">
-                        <td>${index + 1}</td>
+                        <td>${project.projectId.toString().padStart(6, '0')}</td>
                         <td>${project.title}</td>
+                        <td class="${statusClass}" onclick="openEditModal(${project.projectId})">${statusTranslations[project.status]}</td>
+                        <td class="approval-status" onclick="openEditModal(${project.projectId})">${approvalStatusTranslations[project.isApproved]}</td>
                         <td>${project.fundingGoal.toLocaleString()} 원</td>
                         <td>${project.currentFunding.toLocaleString()} 원</td>
                         <td>${startDate}</td>
                         <td>${endDate}</td>
-                        <td>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="openEditModal(${project.projectId})">
-                                ${statusTranslations[project.status] || "알 수 없음"}
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="openEditModal(${project.projectId})">
-                                ${approvalStatusTranslations[project.isApproved] || "알 수 없음"}
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-primary btn-sm" onclick="openEditModal(${project.projectId})">수정</button>
-                        </td>
                     </tr>
                 `;
             });
@@ -159,14 +156,8 @@
 
     function openEditModal(projectId) {
         selectedProjectId = projectId;
-
-        const approvalValue = document.querySelector(`#approvalStatus-${projectId}`)?.value || "AWAITING_APPROVAL";
-        const statusValue = document.querySelector(`#projectStatus-${projectId}`)?.value || "ONGOING";
-
-        document.getElementById("modalApprovalStatus").value = approvalValue;
-        document.getElementById("modalProjectStatus").value = statusValue;
-
         document.getElementById("editModal").style.display = "block";
+        window.scrollTo(0, 0);  // 모달 열릴 때 스크롤 상단으로 이동
     }
 
     function closeEditModal() {
