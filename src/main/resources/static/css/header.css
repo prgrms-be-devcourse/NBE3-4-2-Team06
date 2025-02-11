@@ -90,7 +90,9 @@
         margin-right: 5%;  /* 모바일에서는 오른쪽에서 5% 떨어지게 설정 */
         gap: 5px;  /* 모바일 버튼 간격 축소 */
     }
-
+ .admin-page .auth-buttons {
+        margin-right: 13%;  /* 모바일에서 admin 페이지 마진 조정 */
+    }
     .user-name {
         font-size: 0.8rem;
         margin-right: 5px;
@@ -99,5 +101,23 @@
     .custom-btn {
         font-size: 11px;
         padding: 4px 10px;
+    }
+/* Responsive Design for Small Devices */
+@media (max-width: 480px) {
+    .logo {
+        font-size: 20px;
+    }
+
+    .user-name {
+        font-size: 0.8rem;
+    }
+
+    .custom-btn {
+        font-size: 11px;
+        padding: 5px 10px;
+    }
+
+    .admin-page .auth-buttons {
+        margin-right: 15%;  /* 작은 화면에서 admin 페이지 마진 조정 */
     }
 }

@@ -1,77 +1,328 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-    <title>Startreum - 관리자 페이지</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <title>Startreum - 관리자 페이지</title>
     <link rel="stylesheet" href="/css/admin_main.css">
+    <style>
+        body {
+            font-family: 'Noto Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #F0F2F1;
+        }
+
+        .header {
+            background: #FFFFFF;
+            position: fixed;
+            width: calc(100% - 203px);
+            height: 24px;
+            left: 203px;
+            top: 0;
+            z-index: 1000;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar {
+            position: fixed;
+            width: 203px;
+            height: 100vh;
+            background: #7D4988;
+            padding-top: 20px;
+        }
+
+        .sidebar button {
+            display: block;
+            width: 100%;
+            padding: 12px 24px;
+            margin: 10px 0;
+            background: #7D4988;
+            color: #FFFFFF;
+            border: none;
+            font-weight: 600;
+            font-size: 15px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .main-content {
+            margin-left: 223px;
+            padding: 120px 20px 20px; /* 헤더 공간 확보 */
+        }
+
+        .card {
+            background: #FFFFFF;
+            box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.25);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+
+        .card h2 {
+            font-size: 20px;
+            color: #6A6A6A;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border-bottom: 1px solid #B3B3B3;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #F0F2F1;
+            color: #6A6A6A;
+            font-weight: 600;
+        }
+
+        .status-success { color: green; }
+        .status-fail { color: red; }
+        .status-pending { color: orange; }
+
+        .btn-action {
+            background: #7D4988;
+            color: #FFFFFF;
+            border-radius: 16px;
+            padding: 5px 15px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+          /* 반응형 스타일 */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                padding: 10px;
+            }
+
+            .sidebar button {
+                text-align: center;
+                font-size: 14px;
+            }
+
+            .header {
+                width: 100%;
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 140px 10px 10px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .btn-action {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                border: 1px solid #ccc;
+                margin-bottom: 10px;
+            }
+
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                text-align: left;
+            }
+
+            td:before {
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                font-weight: bold;
+            }
+
+            td:nth-of-type(1):before { content: "회원 ID"; }
+            td:nth-of-type(2):before { content: "이메일"; }
+            td:nth-of-type(3):before { content: "이름"; }
+            td:nth-of-type(4):before { content: "역할"; }
+            td:nth-of-type(5):before { content: "가입일"; }
+
+            td:nth-of-type(1):before { content: "프로젝트 ID"; }
+            td:nth-of-type(2):before { content: "제목"; }
+            td:nth-of-type(3):before { content: "상태"; }
+            td:nth-of-type(4):before { content: "승인"; }
+            td:nth-of-type(5):before { content: "목표액"; }
+            td:nth-of-type(6):before { content: "현재 모집금액"; }
+            td:nth-of-type(7):before { content: "시작일"; }
+            td:nth-of-type(8):before { content: "종료일"; }
+            td:nth-of-type(9):before { content: "수정일"; }
+            td:nth-of-type(10):before { content: "생성일"; }
+        }
+
+    </style>
 </head>
 <body>
+<div class="admin-page">
+<!-- Sidebar -->
+<div class="sidebar">
+    <button onclick="location.href='/admin/users'">회원 관리</button>
+    <button onclick="location.href='/admin/project'">프로젝트 관리</button>
+    <button onclick="location.href='/admin/transactions'">송금 및 환불</button>
+    <button onclick="location.href='/admin/inquiries'">문의 관리</button>
+</div>
 
 <!-- Header -->
-<div th:replace="~{fragments/header :: header}"></div>
+<div class="header">
+    <div th:replace="~{fragments/header :: header}"></div>
+</div>
 
-<!-- 관리자 대시보드 섹션 -->
-<section class="bg-light py-5 text-center">
-    <div class="container">
-        <h1 class="fw-bold mb-3">관리자 페이지</h1>
-        <p class="text-muted mb-4">프로젝트 및 사용자 관리</p>
-        <div>
-            <button class="btn btn-primary me-2" onclick="location.href='/admin/users'">사용자 관리</button>
-            <button class="btn btn-outline-primary" onclick="window.location.href='/admin/project'">프로젝트 관리</button>
+<!-- Main Content -->
+<div class="main-content">
 
+
+    <!-- 회원 관리 -->
+    <div class="card">
+        <h2>회원 관리</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>회원 ID</th>
+                    <th>이메일</th>
+                    <th>이름</th>
+                    <th>역할</th>
+                    <th>가입일</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>546236</td>
+                    <td>art@example.com</td>
+                    <td>김예술</td>
+                    <td>수혜자</td>
+                    <td>2025-02-01</td>
+                </tr>
+                <tr>
+                    <td>742366</td>
+                    <td>support@example.com</td>
+                    <td>김지원</td>
+                    <td>후원자</td>
+                    <td>2025-02-02</td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
-</section>
 
-<!-- 최근 활동 로그 -->
-<section id="admin-logs" class="container py-5">
-    <h2 class="fw-bold mb-4">최근 활동 로그</h2>
-    <div class="list-group">
-        <a href="#" class="list-group-item list-group-item-action">사용자 A가 새로운 프로젝트를 등록함</a>
-        <a href="#" class="list-group-item list-group-item-action">사용자 B가 프로젝트 후원을 완료함</a>
-        <a href="#" class="list-group-item list-group-item-action">관리자가 프로젝트 C를 승인함</a>
-    </div>
-</section>
-
-<!-- 관리자 기능 섹션 -->
-<section id="admin-actions" class="bg-light py-5">
-    <div class="container">
-        <h2 class="fw-bold mb-4">관리자 기능</h2>
-        <div class="row">
-            <div class="col-md-4 col-sm-6">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">사용자 계정 관리</h5>
-                        <p class="text-muted">회원 정보 수정 및 삭제</p>
-                        <button class="btn btn-primary w-100" onclick="location.href='/admin/users'">관리하기</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">프로젝트 검토</h5>
-                        <p class="text-muted">등록된 프로젝트 승인 및 관리</p>
-                        <button class="btn btn-primary w-100" onclick="location.href='/admin/projects'">관리하기</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">신고 처리</h5>
-                        <p class="text-muted">사용자 신고 및 조치</p>
-                        <button class="btn btn-primary w-100" onclick="location.href='/admin/reports'">검토하기</button>
-                    </div>
-                </div>
-            </div>
+    <!-- 프로젝트 관리 -->
+    <div class="card">
+        <h2>프로젝트 관리</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>프로젝트 ID</th>
+                    <th>제목</th>
+                    <th>상태</th>
+                    <th>승인</th>
+                    <th>목표액</th>
+                    <th>현재 모집금액</th>
+                    <th>시작일</th>
+                    <th>종료일</th>
+                    <th>수정일</th>
+                    <th>생성일</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>000001</td>
+                    <td>피아노 리사이틀</td>
+                    <td class="status-fail">실패</td>
+                    <td>거절</td>
+                    <td>800,000원</td>
+                    <td>0원</td>
+                    <td>2025-02-05</td>
+                    <td>2025-02-05</td>
+                    <td>2025-02-05</td>
+                    <td>2025-02-05</td>
+                </tr>
+                <tr>
+                    <td>000002</td>
+                    <td>졸업 연주 공연</td>
+                    <td class="status-fail">실패</td>
+                    <td>승인</td>
+                    <td>600,000원</td>
+                    <td>480,000원</td>
+                    <td>2025-02-06</td>
+                    <td>2025-02-07</td>
+                    <td>2025-02-06</td>
+                    <td>2025-02-06</td>
+                </tr>
+                <tr>
+                    <td>000003</td>
+                    <td>지역아동센터 봉사활동1</td>
+                    <td class="status-success">성공</td>
+                    <td>승인</td>
+                    <td>400,000원</td>
+                    <td>500,000원</td>
+                    <td>2025-02-07</td>
+                    <td>2025-02-08</td>
+                    <td>2025-02-07</td>
+                    <td>2025-02-07</td>
+                </tr>
+                <tr>
+                    <td>000004</td>
+                    <td>지역아동센터 봉사활동2</td>
+                    <td class="status-pending">진행중</td>
+                    <td>승인</td>
+                    <td>400,000원</td>
+                    <td>700,000원</td>
+                    <td>2025-02-08</td>
+                    <td>2025-02-11</td>
+                    <td>2025-02-08</td>
+                    <td>2025-02-08</td>
+                </tr>
+                </tbody>
+            </table>
         </div>
     </div>
-</section>
 
-<!-- Footer -->
-<div th:replace="~{fragments/footer :: footer}"></div>
 
+</div>
+</div>
 </body>
 </html>
