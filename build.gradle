@@ -48,6 +48,10 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // Jackson을 활용한 JSON 직렬화 지원
 
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'  // ✅ 최신 버전 사용
+	testImplementation 'org.mockito:mockito-core:5.14.2'  // ✅ 최신 Mockito
+	testImplementation 'org.springframework.security:spring-security-test'
+
 }
 
 tasks.named('test') {

@@ -92,7 +92,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
         try {
-            System.out.println("로그인 요청 받음: name=" + loginRequest.name());
+           // System.out.println("로그인 요청 받음: name=" + loginRequest.name());
 
             UserResponse user = userService.authenticateUser(loginRequest.name(), loginRequest.password());
 
@@ -118,8 +118,8 @@ public class UserController {
             response.put("role", user.role().name());
             response.put("refreshTokenExpiry", refreshTokenEntity.getExpiryDate().getTime());
 
-            System.out.println("발급된 액세스 토큰: " + accessToken);
-            System.out.println("발급된 리프레시 토큰: " + refreshToken);
+            //System.out.println("발급된 액세스 토큰: " + accessToken);
+            //System.out.println("발급된 리프레시 토큰: " + refreshToken);
 
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
