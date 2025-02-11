@@ -1,123 +1,103 @@
 /* Custom Header Styles */
 .custom-header {
-    height: var(--header-height);
+    height: 50px;
     display: flex;
-    align-items: center;
+    align-items: center;  /* 상단 정렬에서 중앙 정렬로 변경 */
     justify-content: space-between;
-    background: rgba(255, 255, 255, 0);  /* 완전 투명 */
-    padding: 10px 20px;
-    box-shadow: none;  /* 그림자 제거 */
-    position: absolute;  /* 배경 위로 배치 */
+    background: rgba(255, 255, 255, 0);
+    padding: 5px 10px;
+    box-shadow: none;
+    position: absolute;
     width: 100%;
     top: 0;
     left: 0;
     z-index: 3;
 }
 
-/* 기본 로고 색상 (검은색) */
-.custom-header .logo {
-    color: #000000 !important;
-    font-family: 'Jersey 25', sans-serif !important;
-    font-weight: bold !important;
-    font-size: 40px !important;
-}
-
 /* Logo Section */
 .logo {
-    position: absolute;
-    left: 30px;
-    top: 20px;
+    position: absolute;  /* 절대 위치로 상단 고정 */
+    top: 8px;  /* 상단에서 8px 띄우기 */
+    left: 10px;  /* 왼쪽에서 10px 띄우기 */
     font-size: 40px;
-    color: #FFFFFF;
+    color: #000000;  /* 기본 색상 검은색 */
     font-family: 'Jersey 25', sans-serif !important;
     font-weight: bold;
-    z-index: 2;
+    margin: 0;  /* 마진 제거 */
 }
 
-/* 메인 페이지에서 로고 색상 (흰색) */
+/* Main Page에서 로고 색상을 흰색으로 변경 */
 .main-page .logo {
-    color: #FFFFFF !important;
+    color: #FFFFFF;
 }
-
-/* 메인 페이지 외 모든 페이지에서 헤더는 투명 유지 */
-body:not(.main-page) .custom-header {
-    background: rgba(255, 255, 255, 0);  /* 투명 배경 유지 */
-    box-shadow: none;  /* 그림자 제거 */
-    position: absolute;  /* 배경 위로 배치 */
-}
-
-/* Container Styles */
-.custom-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 10px;
-}
-
-/* Logo Styles */
-.logo-container {
+/* Auth Buttons Container */
+.auth-buttons {
     display: flex;
     align-items: center;
-}
-
-.logo-link {
-    text-decoration: none;
+    gap: 10px;  /* 버튼 간격 설정 */
+    margin-right: 10%;  /* 오른쪽에서 10% 떨어지게 설정 */
 }
 
 /* Auth Button Styles */
-.auth-buttons {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
-.user-name {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #555555;  /* 진한 회색 텍스트 */
-    margin-right: 15px;
-}
-
-.custom-btn {
-    padding: 10px 20px;
+.custom-btn, .custom-btn:link, .custom-btn:visited, .custom-btn:active, button.custom-btn {
+    display: inline-block;
+    padding: 6px 12px;
     background: #7D4988;
-    border-radius: 16px;
+    border: none;
+    border-radius: 12px;
     color: #FFFFFF;
     text-decoration: none;
-    font-size: 1.2vw;
+    font-size: 12px;
+    white-space: nowrap;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: center;
 }
 
-.custom-btn.primary, .custom-btn.logout {
-    background: rgba(125, 73, 136, 1);
+/* 사용자 이름 */
+.user-name {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #000000;  /* 기본 색상 검은색 */
+    margin-right: 8px;
 }
 
-/* Button Hover Effects */
+/* Main Page에서 사용자 이름 색상을 흰색으로 변경 */
+.main-page .user-name {
+    color: #FFFFFF;
+}
+
+/* Hover Effects */
 .custom-btn:hover {
-    background: rgba(125, 73, 136, 1);  /* 호버 시 더 진한 색 */
-    transform: scale(1.05);
+    background: rgba(125, 73, 136, 1);
+    transform: scale(1.02);
     transition: transform 0.2s ease, background 0.2s ease;
 }
 
-/* Responsive Design */
+/* Responsive Design for Mobile */
 @media (max-width: 768px) {
     .custom-header {
-        flex-direction: column;
-        height: auto;
+        padding: 5px 8px;
+    }
+
+    .logo {
+        font-size: 24px;
+        top: 5px;  /* 모바일에서도 상단에 고정 */
+        left: 5px;  /* 모바일에서 왼쪽 여백 축소 */
     }
 
     .auth-buttons {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .custom-btn {
-        width: 100%;
-        text-align: center;
+        margin-right: 5%;  /* 모바일에서는 오른쪽에서 5% 떨어지게 설정 */
+        gap: 5px;  /* 모바일 버튼 간격 축소 */
     }
 
     .user-name {
-        margin-right: 0;
-        margin-bottom: 10px;
+        font-size: 0.8rem;
+        margin-right: 5px;
+    }
+
+    .custom-btn {
+        font-size: 11px;
+        padding: 4px 10px;
     }
 }

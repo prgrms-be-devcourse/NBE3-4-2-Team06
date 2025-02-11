@@ -15,6 +15,8 @@ main {
     gap: 50px;
     margin-top: 140px;
     margin-bottom: 50px;
+    justify-content: center;
+    flex-wrap: nowrap;
 }
 
 .profile-pic {
@@ -24,7 +26,7 @@ main {
     border-radius: 50%;
     position: relative;
     margin-top: 50px;
-
+    flex-shrink: 0;
 }
 
 .inquiry {
@@ -45,6 +47,10 @@ main {
     padding: 40px;
     background: #FFFFFF;
     width: 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1;
 }
 
 .profile-info h2 {
@@ -82,6 +88,8 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
+    overflow-x: auto;
+    display: block;
 }
 
 table th, table td {
@@ -98,4 +106,113 @@ table th {
 
 .inquiries .btn {
     margin: 0 5px;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 1024px) {
+    main {
+        padding: 30px 50px;
+    }
+
+    .profile-info {
+        width: calc(100% - 300px);
+        padding: 20px;
+    }
+
+    .profile-info h2 {
+        font-size: 35px;
+    }
+
+    .profile-info p {
+        font-size: 20px;
+    }
+
+    table th, table td {
+        font-size: 20px;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    main {
+        padding: 20px;
+    }
+
+    .profile-section {
+        flex-direction: row;
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .profile-pic {
+        width: 200px;
+        height: 200px;
+        margin-bottom: 20px;
+    }
+
+    .inquiry {
+        padding: 10px 20px;
+        font-size: 18px;
+        bottom: -60px;
+    }
+
+    .profile-info {
+        width: 100%;
+        text-align: left;
+    }
+
+    .profile-info h2 {
+        font-size: 30px;
+    }
+
+    .profile-info p {
+        font-size: 18px;
+    }
+
+    .btn {
+        font-size: 18px;
+        padding: 8px 16px;
+    }
+
+    table th, table td {
+        font-size: 18px;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-pic {
+        width: 150px;
+        height: 150px;
+    }
+
+    .inquiry {
+        padding: 8px 16px;
+        font-size: 16px;
+        bottom: -50px;
+    }
+
+    .profile-info {
+        width: 100%;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .profile-info h2 {
+        font-size: 25px;
+    }
+
+    .profile-info p {
+        font-size: 16px;
+    }
+
+    .btn {
+        font-size: 16px;
+        padding: 6px 12px;
+    }
+
+    table th, table td {
+        font-size: 16px;
+        padding: 6px;
+    }
 }
