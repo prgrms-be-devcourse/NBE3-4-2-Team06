@@ -124,24 +124,24 @@ public class UserService {
 
     // 사용자 마이페이지 조회
     public UserResponse getUserProfile(String name, String loggedInUsername) {
-        System.out.println("🔍 프로필 조회: 요청한 사용자 = " + name + ", 로그인한 사용자 = " + loggedInUsername);
+       // System.out.println("🔍 프로필 조회: 요청한 사용자 = " + name + ", 로그인한 사용자 = " + loggedInUsername);
 
         User loggedInUser = userRepository.findByName(loggedInUsername)
                 .orElseThrow(() -> {
-                    System.out.println("❌ 현재 로그인한 사용자 정보 없음");
+                   // System.out.println("❌ 현재 로그인한 사용자 정보 없음");
                     return new IllegalArgumentException("현재 로그인한 사용자를 찾을 수 없습니다.");
                 });
 
         User targetUser = userRepository.findByName(name)
                 .orElseThrow(() -> {
-                    System.out.println("❌ 요청된 사용자 정보 없음: " + name);
+                    //System.out.println("❌ 요청된 사용자 정보 없음: " + name);
                     return new IllegalArgumentException("해당 사용자를 찾을 수 없습니다.");
                 });
 
         // 🔹 본인 또는 ADMIN 역할만 프로필 조회 가능
         if (!loggedInUser.getName().equalsIgnoreCase(targetUser.getName())
                 && !loggedInUser.getRole().name().equalsIgnoreCase("ADMIN")) {
-            System.out.println("⛔ 권한 없음: " + loggedInUser.getName() + "이(가) " + targetUser.getName() + "의 정보를 조회하려 함");
+           // System.out.println("⛔ 권한 없음: " + loggedInUser.getName() + "이(가) " + targetUser.getName() + "의 정보를 조회하려 함");
             throw new AccessDeniedException("권한이 없습니다.");
         }
 

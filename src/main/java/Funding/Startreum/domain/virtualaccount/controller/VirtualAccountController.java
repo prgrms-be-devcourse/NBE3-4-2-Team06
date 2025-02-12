@@ -33,17 +33,17 @@ public class VirtualAccountController {
      */
     @GetMapping("/user/{name}")
     public ResponseEntity<VirtualAccountDtos> getAccount(@PathVariable String name, Principal principal) {
-        System.out.println(principal);
-        System.out.println("🔍 Principal 정보: " + (principal != null ? principal.getName() : "NULL"));
-        System.out.println("🔍 요청된 사용자: " + name);
+       // System.out.println(principal);
+      //  System.out.println("🔍 Principal 정보: " + (principal != null ? principal.getName() : "NULL"));
+       // System.out.println("🔍 요청된 사용자: " + name);
 
         if (principal == null) {
-            System.out.println("❌ 인증되지 않은 사용자 요청");
+           // System.out.println("❌ 인증되지 않은 사용자 요청");
             return ResponseEntity.status(401).body(new VirtualAccountDtos(false)); // Unauthorized
         }
 
         if (!principal.getName().equals(name)) {
-            System.out.println("❌ 본인 또는 관리자가 아님: 접근 불가");
+          //  System.out.println("❌ 본인 또는 관리자가 아님: 접근 불가");
             return ResponseEntity.status(403).body(new VirtualAccountDtos(false)); // Forbidden
         }
 

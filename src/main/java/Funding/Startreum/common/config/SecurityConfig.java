@@ -128,7 +128,7 @@ public class SecurityConfig {
                         .permitAll()
                 );
 
-        System.out.println("✅ Spring Security 설정 로드됨");
+        //System.out.println("✅ Spring Security 설정 로드됨");
         return http.build();
     }
 

@@ -71,18 +71,18 @@ public class UserController {
     // 로그아웃
     @PostMapping("/api/users/logout")
     public ResponseEntity<Map<String, String>> logout() {
-        System.out.println("🔹 로그아웃 API 호출됨");
+        //System.out.println("🔹 로그아웃 API 호출됨");
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
-            System.out.println("❌ 로그아웃 실패: 인증되지 않은 사용자");
+            //System.out.println("❌ 로그아웃 실패: 인증되지 않은 사용자");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("status", "error", "message", "로그인 상태가 아닙니다."));
         }
 
         String username = authentication.getName();
-        System.out.println("✅ 로그아웃 성공 - 사용자: " + username);
+        //System.out.println("✅ 로그아웃 성공 - 사용자: " + username);
 
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok(Map.of("status", "success", "message", "로그아웃 성공"));

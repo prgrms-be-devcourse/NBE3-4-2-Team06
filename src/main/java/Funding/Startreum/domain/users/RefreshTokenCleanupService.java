@@ -17,8 +17,8 @@ public class RefreshTokenCleanupService {
     // ✅ 매일 밤 12시(자정)에 실행 (크론 표현식: "0 0 0 * * ?")
     @Scheduled(cron = "0 0 0 * * ?")
     public void cleanupExpiredTokens() {
-        System.out.println("🔹 만료된 Refresh Token 정리 시작...");
+       // System.out.println("🔹 만료된 Refresh Token 정리 시작...");
         int deletedCount = refreshTokenRepository.deleteExpiredTokens(new Date());
-        System.out.println("✅ 삭제된 만료 토큰 수: " + deletedCount);
+        //System.out.println("✅ 삭제된 만료 토큰 수: " + deletedCount);
     }
 }

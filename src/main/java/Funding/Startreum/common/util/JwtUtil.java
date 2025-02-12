@@ -58,12 +58,12 @@ public class JwtUtil {
                     .getBody();
 
             String tokenUsername = claims.getSubject();
-            System.out.println("📌 토큰에서 추출한 사용자명: " + tokenUsername);
+            //System.out.println("📌 토큰에서 추출한 사용자명: " + tokenUsername);
 
             boolean isValidUser = tokenUsername.equals(userDetails.getUsername());
 
             if (!isValidUser) {
-                System.out.println("❌ 토큰의 사용자명과 DB의 사용자명이 일치하지 않음.");
+              // System.out.println("❌ 토큰의 사용자명과 DB의 사용자명이 일치하지 않음.");
                 return false;
             }
 
