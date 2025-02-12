@@ -4,13 +4,15 @@ document.getElementById('loginForm').onsubmit = async (event) => {
     const name = document.getElementById('name').value;
     const password = document.getElementById('password').value;
 
+    console.log("입력된 값:", { name, password }); // 디버깅용 로그 추가
+
     try {
         const response = await fetch('/api/users/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name, password }),
+            body: JSON.stringify({ name, password }),  // JSON 형식으로 요청 전송
         });
 
         if (!response.ok) {
@@ -23,7 +25,6 @@ document.getElementById('loginForm').onsubmit = async (event) => {
         const user = await response.json();
         console.log("로그인 성공!", user);
 
-        // ✅ userName으로 변경
         alert(`로그인 성공! 환영합니다, ${user.userName}님.`);
 
         // JWT 저장
